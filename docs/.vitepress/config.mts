@@ -3,6 +3,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: "Dashboard Starter Kit",
   description: "Census and survey dashboard starter kit documentation",
+  base: '/dashboard-starter-kit/',
   ignoreDeadLinks: [
     /^https?:\/\/localhost/
   ],
@@ -169,7 +170,7 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/tech-acs/chimera-starter-kit' }
+      { icon: 'github', link: 'https://github.com/tech-acs/dashboard-starter-kit' }
     ]
   }
 })

@@ -1,6 +1,6 @@
 import './bootstrap';
 
-import Plotly from 'plotly.js-dist';
+import Plotly from 'plotly.js-cartesian-dist';
 window.Plotly = Plotly;
 
 import PlotlyChart from "./PlotlyChart.js";

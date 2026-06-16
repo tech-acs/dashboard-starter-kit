@@ -14,7 +14,7 @@ hero:
       link: /user/introduction
     - theme: alt
       text: View on GitHub
-      link: https://github.com/tech-acs/chimera-starter-kit
+      link: https://github.com/tech-acs/dashboard-starter-kit
 
 features:
   - title: Users
