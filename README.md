@@ -9,4 +9,4 @@ It is built on top of Laravel Jetstream starter kit.
 
 For installation and usage, please refer to the documentation website
 
-[Documentation](https://tech-acs.github.io/chimera-docs/)
+[Documentation](https://tech-acs.github.io/dashboard-starter-kit/)
