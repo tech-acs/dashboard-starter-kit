@@ -75,7 +75,7 @@
                                 </a>
                             </div>
                             <div>
-                                <a href="https://tech-acs.github.io/chimera-docs/" class="text-gray-400 hover:text-gray-500" target="_blank" title="Documentation">
+                                <a href="https://tech-acs.github.io/dashboard-starter-kit/" class="text-gray-400 hover:text-gray-500" target="_blank" title="Documentation">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
                                         <path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0m-18 -13a9 9 0 0 1 9 0a9 9 0 0 1 9 0m-18 0l0 13m9 -13l0 13m9 -13l0 13"></path>
