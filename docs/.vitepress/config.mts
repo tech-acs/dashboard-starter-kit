@@ -3,6 +3,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: "Dashboard Starter Kit",
   description: "Census and survey dashboard starter kit documentation",
+  base: '/chimera-starter-kit/',
   ignoreDeadLinks: [
     /^https?:\/\/localhost/
   ],
