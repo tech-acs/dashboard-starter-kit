@@ -27,7 +27,7 @@ Higher values reduce the number of vertices in a map shape, which can significan
 
 Note: Set this value to 0 for no simplification (highest detail).
 
-:::note
+:::info
 This is usually a one-time setup. Changing hierarchy mid-census can cause data inconsistencies.
 :::
 

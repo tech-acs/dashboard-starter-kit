@@ -32,6 +32,6 @@ You may use the `withSchedule` method in your application's `bootstrap/app.php` 
 Remember to import the Schedule class at the top of the file, like so:
 `use Illuminate\Console\Scheduling\Schedule;`
 
-:::caution
+:::warning
 When generating reference values, if a reference value already exists for a given **area and indicator** pair, then its value will be overwritten (updated).
 :::

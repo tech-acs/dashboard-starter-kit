@@ -74,7 +74,7 @@ You have the option of importing the data from two file formats:
 
     ![Importing areas from shapefile](/img/developer/building-your-dashboard/importing-area-hierarchy-from-shapefile.png)
 
-:::caution
+:::warning
 Please make sure that the shapefile you are attempting to import has the EPSG:4326 - WGS 84 Coordinate Reference System (CRS).
 :::
 
@@ -95,7 +95,7 @@ Please make sure that the shapefile you are attempting to import has the EPSG:43
 When the process has completed, you will receive a notification. If the importation was successful, you will find the path column formula in the notification message, which you can use on the same spreadsheet file to 
 generate a new "path" column which will be used to uniquely identify the areas and which is also required when you import reference values.
 
-:::caution
+:::warning
 
 You must make sure that your area codes in the csv or shapefiles match your codes from the database. If they need zero padding, the csv importer can help you with that but you will have to apply the zero-padding to the shapefiles yourself. If they also need concatenation, make sure you take care of that before attempting to import them.
 

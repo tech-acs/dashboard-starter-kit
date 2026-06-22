@@ -31,7 +31,7 @@ a modern census/survey dashboard.
 php artisan chimera:install
 ```
 
-:::caution
+:::warning
 
 ** New Applications Only **
 
