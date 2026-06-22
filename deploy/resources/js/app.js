@@ -1,5 +1,3 @@
-import './bootstrap';
-
 import Plotly from 'plotly.js-cartesian-dist';
 window.Plotly = Plotly;
 

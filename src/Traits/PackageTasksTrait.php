@@ -31,10 +31,10 @@ trait PackageTasksTrait
 
     public array $vendorPublish = [
         'Chimera config' => ['--tag=chimera-config', '--force'],
+        'Spatie permissions' => ['--provider=Spatie\Permission\PermissionServiceProvider', '--force'],
         'Chimera migrations' => ['--tag=chimera-migrations', '--force'],
         'Chimera stubs' => ['--tag=chimera-stubs'],
         'Livewire config' => ['--tag=livewire:config'],
-        'Spatie permissions' => ['--provider=Spatie\Permission\PermissionServiceProvider', '--force'],
         'Log Viewer config' => ['--tag=log-viewer-config'],
         'Log Viewer assets' => ['--tag=log-viewer-assets'],
     ];
