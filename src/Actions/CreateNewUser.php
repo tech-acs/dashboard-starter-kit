@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Actions\Fortify;
+namespace Uneca\Chimera\Actions;
 
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 use Laravel\Jetstream\Jetstream;
 use Spatie\Permission\Exceptions\RoleDoesNotExist;
@@ -16,8 +17,6 @@ use Uneca\Chimera\Models\User;
 
 class CreateNewUser implements CreatesNewUsers
 {
-    use PasswordValidationRules;
-
     public function create(array $input)
     {
         $input = array_merge($input, ['email' => Crypt::decryptString($input['invited_email'])]);
@@ -31,7 +30,7 @@ class CreateNewUser implements CreatesNewUsers
                         return $query->where('email', $input['email']);
                     }),
                 ],
-                'password' => $this->passwordRules(),
+                'password' => ['required', 'string', Password::default(), 'confirmed'],
                 'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
             ],
             ['email.exists' => 'Your email could not be found among the valid invites.']
@@ -55,7 +54,6 @@ class CreateNewUser implements CreatesNewUsers
                 }
             }
             if (! empty($invitation->areaRestriction)) {
-                // $user->imposeAreRestriction($invitation->areaRestriction);
                 $user->areaRestrictions()->create([
                     'path' => $invitation->areaRestriction,
                 ]);

@@ -80,22 +80,11 @@ trait PackageTasksTrait
     protected function copyCustomizedJetstreamFiles(): void
     {
         $this->components->info('Copying customized Jetstream files');
-        $this->components->task('Jetstream actions', function () {
-            return $this->copyFilesInDir(__DIR__.'/../../deploy/jetstream-modifications/actions', app_path('Actions/Fortify'));
-        });
         foreach ($this->customizedJetstreamViews as $source => $destination) {
             $this->components->task($source, function () use ($source, $destination) {
                 return copy(__DIR__."/../../deploy/jetstream-modifications/views/$source", resource_path($destination));
             });
         }
-    }
-
-    protected function copyActionClasses(): void
-    {
-        $this->components->info('Copying action classes');
-        $this->components->task('Actions', function () {
-            return File::copyDirectory(__DIR__.'/../../deploy/actions/Maker', app_path('Actions/Maker'));
-        });
     }
 
     protected function configureJetstreamFeatures(): void

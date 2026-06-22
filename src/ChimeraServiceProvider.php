@@ -2,7 +2,6 @@
 
 namespace Uneca\Chimera;
 
-use Uneca\Chimera\Mcp\Servers\DashboardStarterKit;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Exceptions\InvalidSignatureException;
@@ -20,6 +19,7 @@ use Livewire\Livewire;
 use Opcodes\LogViewer\Facades\LogViewer;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Uneca\Chimera\Actions\CreateNewUser;
 use Uneca\Chimera\Commands\Adminify;
 use Uneca\Chimera\Commands\CacheCaseStats;
 use Uneca\Chimera\Commands\CacheClear;
@@ -83,6 +83,7 @@ use Uneca\Chimera\Livewire\SpecialSectionBorder;
 use Uneca\Chimera\Livewire\SubscribeToReportNotification;
 use Uneca\Chimera\Livewire\UserPageSizeAdjuster;
 use Uneca\Chimera\Livewire\XRay;
+use Uneca\Chimera\Mcp\Servers\DashboardStarterKit;
 use Uneca\Chimera\Models\AreaHierarchy;
 use Uneca\Chimera\Models\Setting;
 use Uneca\Chimera\Services\ConnectionLoader;
@@ -239,6 +240,8 @@ class ChimeraServiceProvider extends PackageServiceProvider
                 ->with(['encryptedEmail' => Crypt::encryptString($request->email)]);
         });
 
+        Fortify::createUsersUsing(CreateNewUser::class);
+
         $router = $this->app->make(Router::class);
         $router->pushMiddlewareToGroup('web', CheckAccountSuspension::class);
         $router->pushMiddlewareToGroup('web', Language::class);
@@ -260,7 +263,7 @@ class ChimeraServiceProvider extends PackageServiceProvider
         $this->app->singleton('settings', function () {
             try {
                 if (Schema::hasTable('settings')) {
-                    return Cache::rememberForever('settings', fn () => Setting::all()->pluck('value', 'key'));
+                    return collect(Cache::rememberForever('settings', fn () => Setting::all()->pluck('value', 'key')->toArray()));
                 }
             } catch (\Exception) {
                 //

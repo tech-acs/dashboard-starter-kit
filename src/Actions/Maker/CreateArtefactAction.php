@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Actions\Maker;
+namespace Uneca\Chimera\Actions\Maker;
 
 use Exception;
 use Illuminate\Support\Facades\Artisan;
