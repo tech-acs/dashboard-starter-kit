@@ -2,9 +2,9 @@
 
 namespace Uneca\Chimera\Commands;
 
-use App\Actions\Maker\CreateArtefactAction;
 use Illuminate\Console\Command;
 use Spatie\Permission\Models\Permission;
+use Uneca\Chimera\Actions\Maker\CreateArtefactAction;
 use Uneca\Chimera\DTOs\ReportAttributes;
 use Uneca\Chimera\Models\DataSource;
 use Uneca\Chimera\Models\Report;

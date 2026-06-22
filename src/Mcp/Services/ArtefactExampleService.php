@@ -40,7 +40,7 @@ class ArtefactExampleService
 
     public function getExample(string $type, string $name): ?string
     {
-        $path = $this->exampleDir($type) . '/' . $name . '.php.stub';
+        $path = $this->exampleDir($type).'/'.$name.'.php.stub';
 
         if (! file_exists($path)) {
             return null;
@@ -77,7 +77,7 @@ class ArtefactExampleService
 
     private function exampleDir(string $type): string
     {
-        return __DIR__ . '/../../../resources/artefact-examples/' . $type;
+        return __DIR__.'/../../../resources/artefact-examples/'.$type;
     }
 
     private function isValidReferenceFile(\SplFileInfo $file): bool

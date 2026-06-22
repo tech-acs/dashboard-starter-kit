@@ -18,7 +18,7 @@ describe('EditGauge MCP tool', function () {
             $table->timestamps();
         });
 
-        \DB::table('gauges')->insert([
+        DB::table('gauges')->insert([
             'name' => 'TestGauge',
             'title' => 'Original Title',
             'subtitle' => 'Original subtitle',
@@ -43,7 +43,7 @@ describe('EditGauge MCP tool', function () {
         $response->assertOk();
         $response->assertSee('Gauge updated successfully');
 
-        $gauge = \DB::table('gauges')->where('name', 'TestGauge')->first();
+        $gauge = DB::table('gauges')->where('name', 'TestGauge')->first();
         expect(json_decode($gauge->title)->en)->toBe('Updated Title');
         expect(json_decode($gauge->subtitle)->en)->toBe('Updated subtitle');
         expect($gauge->description)->toBe('Updated description');

@@ -2,13 +2,13 @@
 
 namespace Uneca\Chimera\Mcp\Tools;
 
-use App\Actions\Maker\CreateArtefactAction;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
+use Uneca\Chimera\Actions\Maker\CreateArtefactAction;
 use Uneca\Chimera\DTOs\IndicatorAttributes;
 use Uneca\Chimera\Models\DataSource;
 use Uneca\Chimera\Models\Indicator;

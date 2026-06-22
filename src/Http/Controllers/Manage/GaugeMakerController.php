@@ -2,8 +2,8 @@
 
 namespace Uneca\Chimera\Http\Controllers\Manage;
 
-use App\Actions\Maker\CreateArtefactAction;
 use Illuminate\Routing\Controller;
+use Uneca\Chimera\Actions\Maker\CreateArtefactAction;
 use Uneca\Chimera\DTOs\GaugeAttributes;
 use Uneca\Chimera\Http\Requests\GaugeMakerRequest;
 use Uneca\Chimera\Models\DataSource;
@@ -38,6 +38,7 @@ class GaugeMakerController extends Controller
         if ($result->success) {
             return redirect()->route('gauge.index')->withMessage('Gauge created');
         }
+
         return redirect()->route('gauge.index')->withErrors('There was a problem creating the gauge.');
     }
 }

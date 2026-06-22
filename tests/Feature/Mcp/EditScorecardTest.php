@@ -18,7 +18,7 @@ describe('EditScorecard MCP tool', function () {
             $table->timestamps();
         });
 
-        \DB::table('scorecards')->insert([
+        DB::table('scorecards')->insert([
             'name' => 'TestScorecard',
             'title' => 'Original Title',
             'published' => false,
@@ -43,7 +43,7 @@ describe('EditScorecard MCP tool', function () {
         $response->assertOk();
         $response->assertSee('Scorecard updated successfully');
 
-        $scorecard = \DB::table('scorecards')->where('name', 'TestScorecard')->first();
+        $scorecard = DB::table('scorecards')->where('name', 'TestScorecard')->first();
         expect(json_decode($scorecard->title)->en)->toBe('Updated Title');
         expect($scorecard->description)->toBe('Updated description');
         expect($scorecard->published)->toBe(1);

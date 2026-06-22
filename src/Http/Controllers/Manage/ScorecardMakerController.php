@@ -2,8 +2,8 @@
 
 namespace Uneca\Chimera\Http\Controllers\Manage;
 
-use App\Actions\Maker\CreateArtefactAction;
 use Illuminate\Routing\Controller;
+use Uneca\Chimera\Actions\Maker\CreateArtefactAction;
 use Uneca\Chimera\DTOs\ScorecardAttributes;
 use Uneca\Chimera\Http\Requests\ScorecardMakerRequest;
 use Uneca\Chimera\Models\DataSource;
@@ -37,6 +37,7 @@ class ScorecardMakerController extends Controller
         if ($result->success) {
             return redirect()->route('scorecard.index')->withMessage('Scorecard created');
         }
+
         return redirect()->route('scorecard.index')->withErrors('There was a problem creating the scorecard.');
     }
 }

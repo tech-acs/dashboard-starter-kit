@@ -24,7 +24,7 @@ class ArtefactExampleIndex extends Resource implements HasUriTemplate
         $type = $request->get('type');
 
         if (! $service->isValidType($type)) {
-            return Response::error("Unknown artefact type: \"{$type}\". Available types: " . implode(', ', $service::TYPES));
+            return Response::error("Unknown artefact type: \"{$type}\". Available types: ".implode(', ', $service::TYPES));
         }
 
         $examples = $service->listExamples($type);

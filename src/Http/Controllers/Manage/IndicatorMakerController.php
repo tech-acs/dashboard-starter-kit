@@ -2,8 +2,8 @@
 
 namespace Uneca\Chimera\Http\Controllers\Manage;
 
-use App\Actions\Maker\CreateArtefactAction;
 use Illuminate\Routing\Controller;
+use Uneca\Chimera\Actions\Maker\CreateArtefactAction;
 use Uneca\Chimera\DTOs\IndicatorAttributes;
 use Uneca\Chimera\Http\Requests\IndicatorMakerRequest;
 use Uneca\Chimera\Models\ChartTemplate;

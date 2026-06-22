@@ -21,7 +21,7 @@ describe('EditIndicator MCP tool', function () {
             $table->timestamps();
         });
 
-        \DB::table('indicators')->insert([
+        DB::table('indicators')->insert([
             'name' => 'TestIndicator',
             'title' => 'Original Title',
             'description' => 'Original description',
@@ -49,7 +49,7 @@ describe('EditIndicator MCP tool', function () {
         $response->assertOk();
         $response->assertSee('Indicator updated successfully');
 
-        $indicator = \DB::table('indicators')->where('name', 'TestIndicator')->first();
+        $indicator = DB::table('indicators')->where('name', 'TestIndicator')->first();
         expect(json_decode($indicator->title)->en)->toBe('Updated Title');
         expect(json_decode($indicator->description)->en)->toBe('Updated description');
         expect(json_decode($indicator->help)->en)->toBe('Updated help');
@@ -66,7 +66,7 @@ describe('EditIndicator MCP tool', function () {
 
         $response->assertOk();
 
-        $indicator = \DB::table('indicators')->where('name', 'TestIndicator')->first();
+        $indicator = DB::table('indicators')->where('name', 'TestIndicator')->first();
         expect(json_decode($indicator->title)->en)->toBe('Only Title Changed');
         expect($indicator->description)->toBe('Original description');
         expect($indicator->published)->toBe(0);

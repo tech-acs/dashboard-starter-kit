@@ -49,23 +49,23 @@ class GetDataSources extends Tool
             'data' => $schema->array()
                 ->description('A list of active data sources.')
                 ->items(
-                $schema->object([
-                    'name' => $schema->string()
-                        ->description('The unique system identifier or slug of the data source.')
-                        ->required(),
+                    $schema->object([
+                        'name' => $schema->string()
+                            ->description('The unique system identifier or slug of the data source.')
+                            ->required(),
 
-                    'title' => $schema->string()
-                        ->description('The human-readable display title.')
-                        ->required(),
+                        'title' => $schema->string()
+                            ->description('The human-readable display title.')
+                            ->required(),
 
-                    'start_date' => $schema->string()
-                        ->description('The exercise (census, survey, etc.) start date.')
-                        ->required(),
+                        'start_date' => $schema->string()
+                            ->description('The exercise (census, survey, etc.) start date.')
+                            ->required(),
 
-                    'end_date' => $schema->string()
-                        ->description('The exercise (census, survey, etc.) end date.')
-                        ->required(),
-                ])
+                        'end_date' => $schema->string()
+                            ->description('The exercise (census, survey, etc.) end date.')
+                            ->required(),
+                    ])
                 ),
         ];
     }

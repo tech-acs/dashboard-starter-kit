@@ -42,10 +42,10 @@ describe('ManagePageAssignment MCP tool', function () {
             $table->timestamps();
         });
 
-        \DB::table('indicators')->insert(['name' => 'TestIndicator']);
-        \DB::table('reports')->insert(['name' => 'TestReport']);
-        \DB::table('map_indicators')->insert(['name' => 'TestMapIndicator']);
-        \DB::table('pages')->insert(['slug' => 'test-page', 'title' => 'Test Page', 'for' => 'indicators']);
+        DB::table('indicators')->insert(['name' => 'TestIndicator']);
+        DB::table('reports')->insert(['name' => 'TestReport']);
+        DB::table('map_indicators')->insert(['name' => 'TestMapIndicator']);
+        DB::table('pages')->insert(['slug' => 'test-page', 'title' => 'Test Page', 'for' => 'indicators']);
     });
 
     afterEach(function () {
@@ -77,7 +77,7 @@ describe('ManagePageAssignment MCP tool', function () {
     });
 
     it('detaches an indicator from a page', function () {
-        \DB::table('pageables')->insert([
+        DB::table('pageables')->insert([
             'page_id' => 1,
             'pageable_id' => 1,
             'pageable_type' => 'Uneca\Chimera\Models\Indicator',
@@ -136,7 +136,7 @@ describe('ManagePageAssignment MCP tool', function () {
     });
 
     it('attaches a report to a page', function () {
-        \DB::table('pages')->insert(['slug' => 'report-page', 'title' => 'Report Page', 'for' => 'reports']);
+        DB::table('pages')->insert(['slug' => 'report-page', 'title' => 'Report Page', 'for' => 'reports']);
 
         $response = (new PendingTestResponse($this->app, DashboardStarterKit::class))
             ->tool(ManagePageAssignment::class, [

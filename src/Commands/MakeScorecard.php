@@ -2,14 +2,14 @@
 
 namespace Uneca\Chimera\Commands;
 
-use App\Actions\Maker\CreateArtefactAction;
 use Illuminate\Console\Command;
 use Spatie\Permission\Models\Permission;
+use Uneca\Chimera\Actions\Maker\CreateArtefactAction;
 use Uneca\Chimera\DTOs\ScorecardAttributes;
 use Uneca\Chimera\Models\DataSource;
 use Uneca\Chimera\Models\Scorecard;
-
 use Uneca\Chimera\Validation\ScorecardValidationRules;
+
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\select;
@@ -73,6 +73,7 @@ class MakeScorecard extends Command
         }
 
         error($result->errorMessage);
+
         return self::FAILURE;
     }
 }

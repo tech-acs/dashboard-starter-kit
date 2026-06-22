@@ -33,7 +33,7 @@ class EditChart extends Tool
 
         $instance = DashboardComponentFactory::makeIndicator($indicator);
         if (is_null($instance)) {
-            return Response::error("Failed to instantiate the indicator class. Ensure getData() is implemented and the file is valid.");
+            return Response::error('Failed to instantiate the indicator class. Ensure getData() is implemented and the file is valid.');
         }
 
         try {
@@ -61,7 +61,7 @@ class EditChart extends Tool
                     if (! in_array($col, $availableColumns)) {
                         return Response::error(
                             "Trace at index {$index}: meta.columnNames.{$key} references '{$col}' "
-                            . "but getData() returned columns: " . implode(', ', $availableColumns)
+                            .'but getData() returned columns: '.implode(', ', $availableColumns)
                         );
                     }
                 }
@@ -81,13 +81,13 @@ class EditChart extends Tool
 
         $response = $editIndicator->handle($editRequest);
 
-        $summary = count($data) . ' trace(s) configured';
+        $summary = count($data).' trace(s) configured';
         $columnsUsed = collect($data)
             ->flatMap(fn ($t) => Arr::flatten(Arr::get($t, 'meta.columnNames', [])))
             ->unique()
             ->values();
 
-        return Response::text("Chart designed successfully. {$summary}. Columns matched: " . $columnsUsed->implode(', '));
+        return Response::text("Chart designed successfully. {$summary}. Columns matched: ".$columnsUsed->implode(', '));
     }
 
     public function schema(JsonSchema $schema): array
@@ -96,16 +96,16 @@ class EditChart extends Tool
             'name' => $schema->string()->description('Name of the indicator to design the chart for'),
             'data' => $schema->array()->description(
                 'Array of Plotly trace objects. Each trace requires: '
-                . '"type" (e.g. "bar", "scatter", "pie"), '
-                . '"meta.columnNames" mapping trace properties (x, y, labels, values) to SQL aliases from getData(), '
-                . '"name" (display label), '
-                . 'and optionally "hovertemplate", "marker", etc. '
-                . 'Example: [{"type":"bar","meta":{"columnNames":{"x":"area_name","y":["total"]}},"name":"Total","hovertemplate":"%{y}"}]'
+                .'"type" (e.g. "bar", "scatter", "pie"), '
+                .'"meta.columnNames" mapping trace properties (x, y, labels, values) to SQL aliases from getData(), '
+                .'"name" (display label), '
+                .'and optionally "hovertemplate", "marker", etc. '
+                .'Example: [{"type":"bar","meta":{"columnNames":{"x":"area_name","y":["total"]}},"name":"Total","hovertemplate":"%{y}"}]'
             ),
             'layout' => $schema->object()->nullable()->description(
                 'Optional Plotly layout object. Overrides the default layout. '
-                . 'Common fields: title, xaxis, yaxis, showlegend, margin, etc. '
-                . 'If omitted, a sensible default is used.'
+                .'Common fields: title, xaxis, yaxis, showlegend, margin, etc. '
+                .'If omitted, a sensible default is used.'
             ),
         ];
     }

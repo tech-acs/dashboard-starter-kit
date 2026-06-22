@@ -1,24 +1,28 @@
 <?php
 
-use App\Actions\Maker\CreateArtefactAction;
+use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Eloquent\Model;
 use Laravel\Mcp\Server\Testing\PendingTestResponse;
 use Symfony\Component\Console\Command\Command;
+use Uneca\Chimera\Actions\Maker\CreateArtefactAction;
 use Uneca\Chimera\DTOs\IndicatorAttributes;
 use Uneca\Chimera\Mcp\Servers\DashboardStarterKit;
 use Uneca\Chimera\Mcp\Tools\CreateIndicator;
 use Uneca\Chimera\Models\Indicator;
 use Uneca\Chimera\Results\ArtefactCreationResult;
+
 // Permission stub for Spatie Permission (not in dev dependencies)
 if (! class_exists('Spatie\Permission\Models\Permission')) {
-    class PermissionStub extends \Illuminate\Database\Eloquent\Model
+    class PermissionStub extends Model
     {
         protected $table = 'permissions';
+
         protected $guarded = ['id'];
+
         public $timestamps = true;
     }
     class_alias(PermissionStub::class, 'Spatie\\Permission\\Models\\Permission');
@@ -26,8 +30,10 @@ if (! class_exists('Spatie\Permission\Models\Permission')) {
 
 function fakeIndicatorModel(array $attributes = []): Model
 {
-    $model = new class extends Model {
+    $model = new class extends Model
+    {
         protected $table = 'indicators';
+
         public $timestamps = false;
     };
     $model->forceFill($attributes + ['id' => 1, 'name' => 'TestIndicator']);
@@ -71,7 +77,7 @@ describe('CreateArtefactAction (indicator)', function () {
     });
 
     it('creates indicator and returns success result', function () {
-        $kernelMock = Mockery::mock(Illuminate\Contracts\Console\Kernel::class);
+        $kernelMock = Mockery::mock(Kernel::class);
         $kernelMock->shouldReceive('call')
             ->once()
             ->with('chimera:make-artefact', Mockery::on(function (array $params) {
@@ -99,7 +105,7 @@ describe('CreateArtefactAction (indicator)', function () {
     });
 
     it('returns failed result when file creation fails', function () {
-        $kernelMock = Mockery::mock(Illuminate\Contracts\Console\Kernel::class);
+        $kernelMock = Mockery::mock(Kernel::class);
         $kernelMock->shouldReceive('call')
             ->once()
             ->andReturn(Command::FAILURE);

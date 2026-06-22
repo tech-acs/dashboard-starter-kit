@@ -38,12 +38,12 @@ class ManagePageAssignment extends Tool
 
         $modelClass = $this->modelMap[$artefactType] ?? null;
         if (! $modelClass) {
-            return Response::error("Invalid artefact_type '{$artefactType}'. Valid types: " . implode(', ', array_keys($this->modelMap)));
+            return Response::error("Invalid artefact_type '{$artefactType}'. Valid types: ".implode(', ', array_keys($this->modelMap)));
         }
 
         $artefact = $modelClass::withoutEagerLoads()->where('name', $artefactName)->first();
         if (! $artefact) {
-            return Response::error(ucfirst($artefactType) . " '{$artefactName}' not found");
+            return Response::error(ucfirst($artefactType)." '{$artefactName}' not found");
         }
 
         $page = Page::where('slug', $pageSlug)->first();
@@ -55,12 +55,12 @@ class ManagePageAssignment extends Tool
             $rank = $request->get('rank', 0);
             $artefact->pages()->syncWithoutDetaching([$page->id => ['rank' => $rank]]);
 
-            return Response::text(ucfirst($artefactType) . " '{$artefactName}' attached to page '{$pageSlug}' (rank: {$rank})");
+            return Response::text(ucfirst($artefactType)." '{$artefactName}' attached to page '{$pageSlug}' (rank: {$rank})");
         }
 
         $artefact->pages()->detach($page->id);
 
-        return Response::text(ucfirst($artefactType) . " '{$artefactName}' detached from page '{$pageSlug}'");
+        return Response::text(ucfirst($artefactType)." '{$artefactName}' detached from page '{$pageSlug}'");
     }
 
     public function schema(JsonSchema $schema): array

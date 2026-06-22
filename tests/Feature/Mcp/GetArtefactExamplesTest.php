@@ -1,9 +1,9 @@
 <?php
 
 use Laravel\Mcp\Server\Testing\PendingTestResponse;
+use Uneca\Chimera\Mcp\Servers\DashboardStarterKit;
 use Uneca\Chimera\Mcp\Services\ArtefactExampleService;
 use Uneca\Chimera\Mcp\Tools\GetArtefactExamples;
-use Uneca\Chimera\Mcp\Servers\DashboardStarterKit;
 
 describe('ArtefactExampleService', function () {
     it('validates known types', function () {

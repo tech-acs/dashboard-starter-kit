@@ -5,14 +5,16 @@ namespace Uneca\Chimera\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Uneca\Chimera\Models\DataSource;
+
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\text;
 use function Laravel\Prompts\table;
+use function Laravel\Prompts\text;
 
 class McpInit extends Command
 {
     protected $signature = 'chimera:mcp-init';
+
     protected $description = 'Configure the MCP server by registering dictionary files so AI agents can reference them by data source name';
 
     public function handle()
@@ -57,6 +59,7 @@ class McpInit extends Command
 
             if ($path === '') {
                 unset($dictionaries[$ds->name]);
+
                 continue;
             }
 
@@ -67,7 +70,7 @@ class McpInit extends Command
         $this->line('');
         $this->saveConfig($configPath, $dictionaries);
 
-        info('Configuration saved to ' . $configPath);
+        info('Configuration saved to '.$configPath);
         $this->table(
             ['Data Source', 'Path'],
             collect($dictionaries)->map(fn ($path, $name) => [$name, $path])->values()->toArray()
@@ -81,7 +84,7 @@ class McpInit extends Command
     private function saveConfig(string $configPath, array $dictionaries): void
     {
         File::put($configPath, json_encode([
-                'dictionaries' => $dictionaries,
-            ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . PHP_EOL);
+            'dictionaries' => $dictionaries,
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES).PHP_EOL);
     }
 }

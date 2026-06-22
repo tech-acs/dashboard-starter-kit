@@ -2,9 +2,9 @@
 
 namespace Uneca\Chimera\Commands;
 
-use App\Actions\Maker\CreateArtefactAction;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
+use Uneca\Chimera\Actions\Maker\CreateArtefactAction;
 use Uneca\Chimera\DTOs\IndicatorAttributes;
 use Uneca\Chimera\Models\ChartTemplate;
 use Uneca\Chimera\Models\DataSource;

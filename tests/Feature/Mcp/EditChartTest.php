@@ -28,7 +28,7 @@ function editChartRegisterTestClass(string $name, string $dataSource = 'househol
 {
     $parts = explode('/', $name);
     $className = array_pop($parts);
-    $namespace = 'App\\Livewire\\Indicator' . (count($parts) > 0 ? '\\' . implode('\\', $parts) : '');
+    $namespace = 'App\\Livewire\\Indicator'.(count($parts) > 0 ? '\\'.implode('\\', $parts) : '');
     eval("
         namespace {$namespace} {
             class {$className} extends \\Uneca\\Chimera\\Livewire\\Chart {
@@ -54,7 +54,7 @@ describe('EditChart MCP tool', function () {
     });
 
     it('saves traces and layout for an indicator', function () {
-        \DB::table('indicators')->insert([
+        DB::table('indicators')->insert([
             'name' => 'Households/AverageAgeByArea',
             'slug' => 'households.average-age-by-area',
             'title' => 'Average Age by Area',
@@ -92,7 +92,7 @@ describe('EditChart MCP tool', function () {
         $response->assertSee('average_age');
         $response->assertSee('area_name');
 
-        $indicator = \DB::table('indicators')->where('name', 'Households/AverageAgeByArea')->first();
+        $indicator = DB::table('indicators')->where('name', 'Households/AverageAgeByArea')->first();
         $savedData = json_decode($indicator->data, true);
         expect($savedData)->toBeArray();
         expect($savedData[0]['type'])->toBe('bar');
@@ -105,7 +105,7 @@ describe('EditChart MCP tool', function () {
     });
 
     it('saves traces without layout (uses existing)', function () {
-        \DB::table('indicators')->insert([
+        DB::table('indicators')->insert([
             'name' => 'SimpleIndicator',
             'slug' => 'simple-indicator',
             'title' => 'Simple',
@@ -133,7 +133,7 @@ describe('EditChart MCP tool', function () {
 
         $response->assertOk();
 
-        $indicator = \DB::table('indicators')->where('name', 'SimpleIndicator')->first();
+        $indicator = DB::table('indicators')->where('name', 'SimpleIndicator')->first();
         $savedData = json_decode($indicator->data, true);
         expect($savedData[0]['type'])->toBe('bar');
 
@@ -143,7 +143,7 @@ describe('EditChart MCP tool', function () {
     });
 
     it('returns error when indicator has no data (getData returns empty)', function () {
-        \DB::table('indicators')->insert([
+        DB::table('indicators')->insert([
             'name' => 'EmptyIndicator',
             'slug' => 'empty-indicator',
             'title' => 'Empty',
@@ -171,11 +171,11 @@ describe('EditChart MCP tool', function () {
                 ],
             ]);
 
-        $response->assertHasErrors(["getData() returned no rows"]);
+        $response->assertHasErrors(['getData() returned no rows']);
     });
 
     it('returns error when columnNames reference non-existent columns', function () {
-        \DB::table('indicators')->insert([
+        DB::table('indicators')->insert([
             'name' => 'MismatchIndicator',
             'slug' => 'mismatch-indicator',
             'title' => 'Mismatch',
@@ -214,7 +214,7 @@ describe('EditChart MCP tool', function () {
     });
 
     it('returns error when data parameter is empty', function () {
-        \DB::table('indicators')->insert([
+        DB::table('indicators')->insert([
             'name' => 'TestIndicator',
             'slug' => 'test-indicator',
             'title' => 'Test',
@@ -244,7 +244,7 @@ describe('EditChart MCP tool', function () {
     });
 
     it('returns error when trace is missing meta.columnNames', function () {
-        \DB::table('indicators')->insert([
+        DB::table('indicators')->insert([
             'name' => 'NoColumnNames',
             'slug' => 'no-column-names',
             'title' => 'No Cols',

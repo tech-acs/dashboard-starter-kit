@@ -17,7 +17,7 @@ describe('EditMapIndicator MCP tool', function () {
             $table->timestamps();
         });
 
-        \DB::table('map_indicators')->insert([
+        DB::table('map_indicators')->insert([
             'name' => 'TestMapIndicator',
             'title' => 'Original Title',
             'published' => false,
@@ -40,7 +40,7 @@ describe('EditMapIndicator MCP tool', function () {
         $response->assertOk();
         $response->assertSee('Map indicator updated successfully');
 
-        $mi = \DB::table('map_indicators')->where('name', 'TestMapIndicator')->first();
+        $mi = DB::table('map_indicators')->where('name', 'TestMapIndicator')->first();
         expect(json_decode($mi->title)->en)->toBe('Updated Title');
         expect(json_decode($mi->description)->en)->toBe('Updated description');
         expect($mi->published)->toBe(1);

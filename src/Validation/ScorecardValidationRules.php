@@ -10,7 +10,7 @@ class ScorecardValidationRules
             'name' => ['required', 'string', 'regex:/^[A-Z][A-Za-z\/]*[A-Za-z]$/', 'unique:scorecards,name'],
             'title' => ['required', 'max:255', 'string'],
             'data_source' => 'required',
-            //'stub' => ['required', 'string'],
+            // 'stub' => ['required', 'string'],
         ];
     }
 }

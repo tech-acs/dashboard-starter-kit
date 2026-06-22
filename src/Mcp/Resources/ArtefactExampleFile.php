@@ -27,14 +27,15 @@ class ArtefactExampleFile extends Resource implements HasUriTemplate
         $name = $request->get('name');
 
         if (! $service->isValidType($type)) {
-            return Response::error("Unknown artefact type: \"{$type}\". Available types: " . implode(', ', $service::TYPES));
+            return Response::error("Unknown artefact type: \"{$type}\". Available types: ".implode(', ', $service::TYPES));
         }
 
         $content = $service->getExample($type, $name);
 
         if ($content === null) {
-            return Response::error("Example not found: \"{$name}\" for type \"{$type}\". Available examples: " . implode(', ', $service->getAvailableNames($type)));
+            return Response::error("Example not found: \"{$name}\" for type \"{$type}\". Available examples: ".implode(', ', $service->getAvailableNames($type)));
         }
+
         return Response::text($content);
     }
 }

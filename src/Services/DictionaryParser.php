@@ -53,7 +53,7 @@ class DictionaryParser
         $data = json_decode($content, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new \Exception('Invalid JSON: ' . json_last_error_msg());
+            throw new \Exception('Invalid JSON: '.json_last_error_msg());
         }
 
         $idItems = [];
@@ -214,6 +214,7 @@ class DictionaryParser
                 } else {
                     $context = strtolower($section);
                 }
+
                 continue;
             }
 

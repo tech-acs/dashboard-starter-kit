@@ -2,6 +2,7 @@
 
 namespace Uneca\Chimera\Mcp\Tools;
 
+use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
@@ -19,14 +20,14 @@ class GetArtefactExamples extends Tool
         $name = $request->get('name');
 
         if (! $service->isValidType($type)) {
-            return Response::text("Unknown artefact type: \"{$type}\". Available types: " . implode(', ', $service::TYPES));
+            return Response::text("Unknown artefact type: \"{$type}\". Available types: ".implode(', ', $service::TYPES));
         }
 
         if ($name !== null) {
             $content = $service->getExample($type, $name);
 
             if ($content === null) {
-                return Response::text("Example not found: \"{$name}\" for type \"{$type}\". Available examples: " . implode(', ', $service->getAvailableNames($type)));
+                return Response::text("Example not found: \"{$name}\" for type \"{$type}\". Available examples: ".implode(', ', $service->getAvailableNames($type)));
             }
 
             return Response::text($content);
@@ -42,7 +43,7 @@ class GetArtefactExamples extends Tool
         return Response::text(implode("\n", $lines));
     }
 
-    public function schema(\Illuminate\Contracts\JsonSchema\JsonSchema $schema): array
+    public function schema(JsonSchema $schema): array
     {
         $types = implode(', ', ArtefactExampleService::TYPES);
 

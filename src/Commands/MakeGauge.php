@@ -2,9 +2,9 @@
 
 namespace Uneca\Chimera\Commands;
 
-use App\Actions\Maker\CreateArtefactAction;
 use Illuminate\Console\Command;
 use Spatie\Permission\Models\Permission;
+use Uneca\Chimera\Actions\Maker\CreateArtefactAction;
 use Uneca\Chimera\DTOs\GaugeAttributes;
 use Uneca\Chimera\Models\DataSource;
 use Uneca\Chimera\Models\Gauge;
@@ -80,6 +80,7 @@ class MakeGauge extends Command
         }
 
         error($result->errorMessage);
+
         return self::FAILURE;
     }
 }

@@ -53,7 +53,7 @@ class ValidateArtefact extends Tool
         try {
             DB::connection($model->data_source)->getPdo();
         } catch (\Exception $e) {
-            return Response::error("Data source '{$model->data_source}' is not connectible: " . $e->getMessage());
+            return Response::error("Data source '{$model->data_source}' is not connectible: ".$e->getMessage());
         }
 
         $instance = match ($type) {
@@ -71,11 +71,11 @@ class ValidateArtefact extends Tool
         try {
             $data = $instance->getData('');
         } catch (\Exception $e) {
-            return Response::error("getData() execution failed: " . $e->getMessage());
+            return Response::error('getData() execution failed: '.$e->getMessage());
         }
 
         if ($data === null || $data->isEmpty()) {
-            return Response::text("getData() executed successfully but returned no data.");
+            return Response::text('getData() executed successfully but returned no data.');
         }
 
         $firstRow = $data->first();

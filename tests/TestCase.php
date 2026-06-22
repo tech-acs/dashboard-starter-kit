@@ -3,6 +3,8 @@
 namespace Uneca\Chimera\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Laravel\Mcp\Server\McpServiceProvider;
+use Opcodes\LogViewer\LogViewerServiceProvider;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Uneca\Chimera\ChimeraServiceProvider;
@@ -24,8 +26,8 @@ class TestCase extends Orchestra
     {
         return [
             ChimeraServiceProvider::class,
-            \Opcodes\LogViewer\LogViewerServiceProvider::class,
-            \Laravel\Mcp\Server\McpServiceProvider::class,
+            LogViewerServiceProvider::class,
+            McpServiceProvider::class,
         ];
     }
 

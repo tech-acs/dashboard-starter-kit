@@ -2,8 +2,8 @@
 
 namespace Uneca\Chimera\Http\Controllers\Manage;
 
-use App\Actions\Maker\CreateArtefactAction;
 use Illuminate\Routing\Controller;
+use Uneca\Chimera\Actions\Maker\CreateArtefactAction;
 use Uneca\Chimera\DTOs\ReportAttributes;
 use Uneca\Chimera\Http\Requests\ReportMakerRequest;
 use Uneca\Chimera\Models\DataSource;

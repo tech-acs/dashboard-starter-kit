@@ -18,7 +18,7 @@ describe('EditReport MCP tool', function () {
             $table->timestamps();
         });
 
-        \DB::table('reports')->insert([
+        DB::table('reports')->insert([
             'name' => 'TestReport',
             'title' => 'Original Title',
             'published' => false,
@@ -43,7 +43,7 @@ describe('EditReport MCP tool', function () {
         $response->assertOk();
         $response->assertSee('Report updated successfully');
 
-        $report = \DB::table('reports')->where('name', 'TestReport')->first();
+        $report = DB::table('reports')->where('name', 'TestReport')->first();
         expect(json_decode($report->title)->en)->toBe('Updated Title');
         expect(json_decode($report->description)->en)->toBe('Updated description');
         expect($report->published)->toBe(1);
