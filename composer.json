@@ -18,13 +18,14 @@
     "require": {
         "php": "^8.2",
         "ext-intl": "*",
-        "ext-zip": "*",
         "ext-redis": "*",
-        "spatie/laravel-package-tools": "^1.16",
+        "ext-zip": "*",
         "laravel/jetstream": "^5.0",
+        "laravel/mcp": "^0.7.0",
         "livewire/livewire": "^3.4",
-        "spatie/laravel-translatable": "^6.2",
-        "opcodesio/log-viewer": "^3.10"
+        "opcodesio/log-viewer": "^3.10",
+        "spatie/laravel-package-tools": "^1.16",
+        "spatie/laravel-translatable": "^6.2"
     },
     "require-dev": {
         "laravel/boost": "^2.0",
@@ -45,7 +46,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Uneca\\Chimera\\Tests\\": "tests",
+            "App\\Actions\\Maker\\": "deploy/actions/Maker",
+            "Uneca\\Chimera\\Tests\\": "tests/",
             "Workbench\\App\\": "workbench/app/",
             "Workbench\\Database\\Factories\\": "workbench/database/factories/",
             "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
@@ -53,7 +55,7 @@
     },
     "scripts": {
         "analyse": "vendor/bin/phpstan analyse",
-        "test": "vendor/bin/pest",
+        "test": "vendor/bin/pest --no-coverage",
         "test-coverage": "vendor/bin/pest coverage",
         "post-autoload-dump": [
             "@clear",

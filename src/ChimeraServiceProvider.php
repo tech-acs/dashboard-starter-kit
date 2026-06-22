@@ -2,6 +2,7 @@
 
 namespace Uneca\Chimera;
 
+use Uneca\Chimera\Mcp\Servers\DashboardStarterKit;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Exceptions\InvalidSignatureException;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Laravel\Fortify\Fortify;
+use Laravel\Mcp\Facades\Mcp;
 use Livewire\Livewire;
 use Opcodes\LogViewer\Facades\LogViewer;
 use Spatie\LaravelPackageTools\Package;
@@ -41,6 +43,7 @@ use Uneca\Chimera\Commands\MakeQueryFragment;
 use Uneca\Chimera\Commands\MakeReferenceValueSynthesizer;
 use Uneca\Chimera\Commands\MakeReport;
 use Uneca\Chimera\Commands\MakeScorecard;
+use Uneca\Chimera\Commands\McpInit;
 use Uneca\Chimera\Commands\Production;
 use Uneca\Chimera\Commands\TransferReferenceValues;
 use Uneca\Chimera\Commands\Update;
@@ -149,6 +152,7 @@ class ChimeraServiceProvider extends PackageServiceProvider
                 MakeReport::class,
                 MakeScorecard::class,
                 MakeGauge::class,
+                McpInit::class,
                 Update::class,
                 Production::class,
                 CustomJetstreamInstallCommand::class,
@@ -289,5 +293,7 @@ class ChimeraServiceProvider extends PackageServiceProvider
                 return collect();
             }
         });
+
+        Mcp::local('dashboard-starter-kit', DashboardStarterKit::class);
     }
 }
