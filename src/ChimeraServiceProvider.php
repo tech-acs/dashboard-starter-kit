@@ -2,10 +2,12 @@
 
 namespace Uneca\Chimera;
 
+use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Exceptions\InvalidSignatureException;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
@@ -200,6 +202,8 @@ class ChimeraServiceProvider extends PackageServiceProvider
 
     public function packageBooted()
     {
+        $this->configureCacheSerializableClasses();
+
         Gate::before(function ($user, $ability) {
             if ($ability === 'developer-mode') {
                 return null;
@@ -298,5 +302,31 @@ class ChimeraServiceProvider extends PackageServiceProvider
         });
 
         Mcp::local('dashboard-starter-kit', DashboardStarterKit::class);
+    }
+
+    private function configureCacheSerializableClasses(): void
+    {
+        $chimeraClasses = [
+            Carbon::class,
+            Collection::class,
+            \stdClass::class,
+        ];
+
+        $current = config('cache.serializable_classes');
+
+        match (true) {
+            $current === true => null,
+            is_array($current) => config([
+                'cache.serializable_classes' => array_unique(array_merge($current, $chimeraClasses)),
+            ]),
+            default => config(['cache.serializable_classes' => $chimeraClasses]),
+        };
+
+        try {
+            $manager = app('cache');
+            $property = new \ReflectionProperty($manager, 'stores');
+            $property->setValue($manager, []);
+        } catch (\Exception) {
+        }
     }
 }
