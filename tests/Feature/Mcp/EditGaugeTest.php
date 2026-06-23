@@ -13,7 +13,6 @@ describe('EditGauge MCP tool', function () {
             $table->string('name')->unique();
             $table->string('title')->nullable();
             $table->string('subtitle')->nullable();
-            $table->text('description')->nullable();
             $table->boolean('published')->default(false);
             $table->timestamps();
         });
@@ -36,7 +35,6 @@ describe('EditGauge MCP tool', function () {
                 'name' => 'TestGauge',
                 'title' => 'Updated Title',
                 'subtitle' => 'Updated subtitle',
-                'description' => 'Updated description',
                 'published' => true,
             ]);
 
@@ -46,7 +44,6 @@ describe('EditGauge MCP tool', function () {
         $gauge = DB::table('gauges')->where('name', 'TestGauge')->first();
         expect(json_decode($gauge->title)->en)->toBe('Updated Title');
         expect(json_decode($gauge->subtitle)->en)->toBe('Updated subtitle');
-        expect($gauge->description)->toBe('Updated description');
         expect($gauge->published)->toBe(1);
     });
 

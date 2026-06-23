@@ -8,15 +8,21 @@ use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
 use Uneca\Chimera\Mcp\Tools\Concerns\ForceModelUpdate;
+use Uneca\Chimera\Mcp\Tools\Concerns\RequiresInitializedMcp;
 use Uneca\Chimera\Models\Gauge;
 
 #[Description('Update a gauge\'s metadata after creation. Finds the gauge by name and updates only the provided fields. If this tool fails, report the error and stop — do not fall back to workarounds.')]
 class EditGauge extends Tool
 {
     use ForceModelUpdate;
+    use RequiresInitializedMcp;
 
     public function handle(Request $request): Response
     {
+        if ($abort = $this->abortIfNotInitialized()) {
+            return $abort;
+        }
+
         $name = $request->get('name');
         if (empty($name)) {
             return Response::error('The "name" parameter is required');
@@ -37,10 +43,6 @@ class EditGauge extends Tool
             $update['subtitle'] = $request->get('subtitle');
         }
 
-        if ($request->has('description')) {
-            $update['description'] = $request->get('description');
-        }
-
         if ($request->has('published')) {
             $update['published'] = $request->boolean('published');
         }
@@ -56,7 +58,6 @@ class EditGauge extends Tool
             'name' => $schema->string()->description('Name of the gauge to edit'),
             'title' => $schema->string()->description('New title (optional)')->nullable(),
             'subtitle' => $schema->string()->description('New subtitle (optional)')->nullable(),
-            'description' => $schema->string()->description('New description (optional)')->nullable(),
             'published' => $schema->boolean()->description('Published status (optional)')->nullable(),
         ];
     }

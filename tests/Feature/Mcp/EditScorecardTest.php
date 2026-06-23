@@ -12,7 +12,6 @@ describe('EditScorecard MCP tool', function () {
             $table->id();
             $table->string('name')->unique();
             $table->string('title')->nullable();
-            $table->text('description')->nullable();
             $table->boolean('published')->default(false);
             $table->string('scope')->nullable();
             $table->timestamps();
@@ -35,7 +34,6 @@ describe('EditScorecard MCP tool', function () {
             ->tool(EditScorecard::class, [
                 'name' => 'TestScorecard',
                 'title' => 'Updated Title',
-                'description' => 'Updated description',
                 'published' => true,
                 'scope' => 'Dashboard only',
             ]);
@@ -45,7 +43,6 @@ describe('EditScorecard MCP tool', function () {
 
         $scorecard = DB::table('scorecards')->where('name', 'TestScorecard')->first();
         expect(json_decode($scorecard->title)->en)->toBe('Updated Title');
-        expect($scorecard->description)->toBe('Updated description');
         expect($scorecard->published)->toBe(1);
         expect($scorecard->scope)->toBe('Dashboard only');
     });
