@@ -18,6 +18,12 @@ class CreateArtefactAction
     ): ArtefactCreationResult {
         try {
             return DB::transaction(function () use ($modelClass, $baseNamespace, $attributes) {
+                $filePath = namespaceToPath($baseNamespace, "{$attributes->getName()}.php");
+
+                if (file_exists($filePath)) {
+                    throw new Exception("Class file already exists at {$filePath}. Remove it first if you intend to regenerate.");
+                }
+
                 $artefact = $modelClass::create($attributes->toArray());
 
                 $exitCode = Artisan::call('chimera:make-artefact', [
@@ -28,8 +34,6 @@ class CreateArtefactAction
                 if ($exitCode !== Command::SUCCESS) {
                     throw new Exception('There was a problem creating the class file');
                 }
-
-                $filePath = namespaceToPath($baseNamespace, "{$attributes->getName()}.php");
 
                 return ArtefactCreationResult::success($artefact, $filePath);
             });
