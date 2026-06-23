@@ -9,15 +9,21 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
 use Uneca\Chimera\Enums\IndicatorScope;
 use Uneca\Chimera\Mcp\Tools\Concerns\ForceModelUpdate;
+use Uneca\Chimera\Mcp\Tools\Concerns\RequiresInitializedMcp;
 use Uneca\Chimera\Models\Indicator;
 
 #[Description('Update an indicator\'s metadata after creation. For Plotly traces and layout, use EditChart instead. Finds the indicator by name and updates only the provided fields. If this tool fails, report the error and stop — do not fall back to workarounds.')]
 class EditIndicator extends Tool
 {
     use ForceModelUpdate;
+    use RequiresInitializedMcp;
 
     public function handle(Request $request): Response
     {
+        if ($abort = $this->abortIfNotInitialized()) {
+            return $abort;
+        }
+
         $name = $request->get('name');
         if (empty($name)) {
             return Response::error('The "name" parameter is required');

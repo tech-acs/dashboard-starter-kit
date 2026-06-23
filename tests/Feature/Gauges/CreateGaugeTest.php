@@ -340,7 +340,7 @@ describe('MCP Path', function () {
             ]);
 
         $response->assertOk();
-        $response->assertSee('Gauge created successfully');
+        $response->assertSee("'TestGauge' created successfully");
     });
 
     it('rejects invalid parameters with error response', function () {

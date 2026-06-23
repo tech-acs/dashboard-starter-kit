@@ -10,6 +10,7 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
 use Uneca\Chimera\Actions\Maker\CreateArtefactAction;
 use Uneca\Chimera\DTOs\ReportAttributes;
+use Uneca\Chimera\Mcp\Tools\Concerns\RequiresInitializedMcp;
 use Uneca\Chimera\Models\DataSource;
 use Uneca\Chimera\Models\Report;
 use Uneca\Chimera\Validation\ReportValidationRules;
@@ -17,8 +18,14 @@ use Uneca\Chimera\Validation\ReportValidationRules;
 #[Description('Create a new report (Excel export) artefact. Generates a Livewire component file from a stub and creates the database record. Prerequisites: call get-data-sources first and ask the user which data source to use, then parse the dictionary with read-dictionary. Read example implementations via get-artefact-examples before calling this tool. If this tool fails, report the error and stop — do not fall back to workarounds.')]
 class CreateReport extends Tool
 {
+    use RequiresInitializedMcp;
+
     public function handle(Request $request, CreateArtefactAction $createArtefactAction): Response
     {
+        if ($abort = $this->abortIfNotInitialized()) {
+            return $abort;
+        }
+
         $validator = Validator::make($request->toArray(), ReportValidationRules::rules());
 
         if ($validator->fails()) {
@@ -48,7 +55,7 @@ class CreateReport extends Tool
         $result = $createArtefactAction->execute(modelClass: Report::class, baseNamespace: '\Reports', attributes: $attributes);
 
         if ($result->success) {
-            return Response::text("Report created successfully at {$result->filePath}");
+            return Response::text("Report '{$result->artefact->name}' created successfully at {$result->filePath}. Use this full name (including the data source prefix) for all subsequent tools (validate-artefact, edit-report).");
         }
 
         return Response::error("Failed to create report. {$result->errorMessage}");

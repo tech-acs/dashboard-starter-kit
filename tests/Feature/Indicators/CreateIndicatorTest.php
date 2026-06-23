@@ -371,7 +371,7 @@ describe('MCP Path', function () {
             ]);
 
         $response->assertOk();
-        $response->assertSee('Indicator created successfully');
+        $response->assertSee("'TestIndicator' created successfully");
     });
 
     it('rejects invalid parameters with error response', function () {

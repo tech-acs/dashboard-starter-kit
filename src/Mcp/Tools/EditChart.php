@@ -8,14 +8,21 @@ use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
+use Uneca\Chimera\Mcp\Tools\Concerns\RequiresInitializedMcp;
 use Uneca\Chimera\Models\Indicator;
 use Uneca\Chimera\Services\DashboardComponentFactory;
 
 #[Description('Save the Plotly chart design (traces and layout) for an existing indicator. Call this AFTER implementing getData() — the tool verifies getData() returns data and validates that trace meta.columnNames match actual query result columns, then delegates the save to EditIndicator. Use your Plotly knowledge to craft the trace objects with type, meta.columnNames (matching your SQL aliases), name, hovertemplate, etc. The layout is optional.')]
 class EditChart extends Tool
 {
+    use RequiresInitializedMcp;
+
     public function handle(Request $request, EditIndicator $editIndicator): Response
     {
+        if ($abort = $this->abortIfNotInitialized()) {
+            return $abort;
+        }
+
         $name = $request->get('name');
         if (empty($name)) {
             return Response::error('The "name" parameter is required');
@@ -80,6 +87,10 @@ class EditChart extends Tool
         $editRequest = new Request($editParams);
 
         $response = $editIndicator->handle($editRequest);
+
+        if ($response->isError()) {
+            return $response;
+        }
 
         $summary = count($data).' trace(s) configured';
         $columnsUsed = collect($data)

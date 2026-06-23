@@ -10,6 +10,7 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
 use Uneca\Chimera\Actions\Maker\CreateArtefactAction;
 use Uneca\Chimera\DTOs\GaugeAttributes;
+use Uneca\Chimera\Mcp\Tools\Concerns\RequiresInitializedMcp;
 use Uneca\Chimera\Models\DataSource;
 use Uneca\Chimera\Models\Gauge;
 use Uneca\Chimera\Validation\GaugeValidationRules;
@@ -17,8 +18,14 @@ use Uneca\Chimera\Validation\GaugeValidationRules;
 #[Description('Create a new gauge (visual threshold card) artefact. Generates a Livewire component file from a stub and creates the database record. Prerequisites: call get-data-sources first and ask the user which data source to use, then parse the dictionary with read-dictionary. Read example implementations via get-artefact-examples before calling this tool. If this tool fails, report the error and stop — do not fall back to workarounds.')]
 class CreateGauge extends Tool
 {
+    use RequiresInitializedMcp;
+
     public function handle(Request $request, CreateArtefactAction $createArtefactAction): Response
     {
+        if ($abort = $this->abortIfNotInitialized()) {
+            return $abort;
+        }
+
         $validator = Validator::make($request->toArray(), GaugeValidationRules::rules());
 
         if ($validator->fails()) {
@@ -48,7 +55,7 @@ class CreateGauge extends Tool
         $result = $createArtefactAction->execute(modelClass: Gauge::class, baseNamespace: '\Livewire\Gauge', attributes: $gaugeAttributes);
 
         if ($result->success) {
-            return Response::text("Gauge created successfully at {$result->filePath}");
+            return Response::text("Gauge '{$result->artefact->name}' created successfully at {$result->filePath}. Use this full name (including the data source prefix) for all subsequent tools (validate-artefact, edit-gauge).");
         }
 
         return Response::error("Failed to create gauge. {$result->errorMessage}");

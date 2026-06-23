@@ -8,22 +8,31 @@ use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
+use Uneca\Chimera\Mcp\Services\DictionaryRegistryService;
+use Uneca\Chimera\Mcp\Tools\Concerns\RequiresInitializedMcp;
 use Uneca\Chimera\Services\DictionaryParser;
 
 #[Description('Read a CSPro dictionary (.dcf) file and return its structure: records (tables) with their items (columns), labels, types, and value sets. Use this to understand what data fields are available when writing getData(). Accepts both JSON (CSPro 8+) and INI (pre-CSPro 8.0) formats. You can provide the raw content, or pass a data_source name that was registered via chimera:mcp-init.')]
 class ReadDictionary extends Tool
 {
+    use RequiresInitializedMcp;
+
     public function handle(Request $request): Response
     {
+        if ($abort = $this->abortIfNotInitialized()) {
+            return $abort;
+        }
+
         $dataSource = (string) $request->string('data_source', '');
 
         if (! empty($dataSource)) {
             $path = $this->getDictionaryPath($dataSource);
 
             if ($path === null) {
-                $registered = implode(', ', array_keys($this->registeredDictionaries()));
+                $registry = app(DictionaryRegistryService::class);
+                $registered = $registry->registeredDataSources();
 
-                return Response::error("No dictionary registered for data source '{$dataSource}'. Registered data sources: {$registered}");
+                return Response::error("No dictionary registered for data source '{$dataSource}'. The MCP server has not been initialized. Ask the user to run `php artisan chimera:mcp-init` in the consumer app to register dictionary files, then retry. Do NOT proceed without a dictionary — do not fall back to database schema introspection, file exploration, or any other workaround. Do NOT attempt to run `chimera:mcp-init` yourself — it prompts for dictionary file paths that only the user can provide. Registered data sources: {$registered}");
             }
 
             try {
@@ -88,7 +97,8 @@ class ReadDictionary extends Tool
 
     private function getDictionaryPath(string $name): ?string
     {
-        $dictionaries = $this->registeredDictionaries();
+        $registry = app(DictionaryRegistryService::class);
+        $dictionaries = $registry->registeredDictionaries();
 
         if (! isset($dictionaries[$name])) {
             return null;
@@ -101,19 +111,6 @@ class ReadDictionary extends Tool
         }
 
         return $path;
-    }
-
-    private function registeredDictionaries(): array
-    {
-        $configPath = base_path('dashboard-starter-kit-mcp.json');
-
-        if (! File::exists($configPath)) {
-            return [];
-        }
-
-        $config = json_decode(File::get($configPath), true);
-
-        return $config['dictionaries'] ?? [];
     }
 
     public function schema(JsonSchema $schema): array

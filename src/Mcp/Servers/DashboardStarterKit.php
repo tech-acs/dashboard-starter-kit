@@ -32,13 +32,33 @@ This MCP server helps AI coding agents create and edit dashboard artefacts.
 
 ## Failure protocol
 
-Every artefact tool (`create-*`, `edit-*`) depends on a running MCP server, the
-database, and the `chimera:make-artefact` generator command. If any tool call
-fails — whether from a connection error, validation error, or runtime exception —
-report the error verbatim to the user and stop. Do NOT fall back to Artisan
-commands, manual file/Database writes, or any other workaround. Bypassing the
-tools skips permission creation, transaction safety, and stub generation, leaving
-the project in an inconsistent state.
+Every tool depends on a running MCP server, the database, and (for artefact
+tools) the `chimera:make-artefact` generator command. If any tool call fails —
+whether from a connection error, validation error, missing dictionary, or
+runtime exception — report the error verbatim to the user and stop. Do NOT fall
+back to Artisan commands, manual file/Database writes, `laravel-boost_database-schema`,
+file exploration, or any other workaround. Bypassing the tools skips permission
+creation, transaction safety, and stub generation, leaving the project in an
+inconsistent state.
+
+If `read-dictionary` reports that no dictionary is registered, abort the workflow
+and ask the user to run `php artisan chimera:mcp-init` in the consumer app. The
+dictionary is the only source of truth for record→table and item→column mappings.
+
+## Prerequisites
+
+Before any artefact work, the consumer app must have run
+`php artisan chimera:mcp-init` to register dictionary files for each data
+source. Until this command has been run, every tool except `get-data-sources`
+will refuse with an "MCP server has not been initialized" error.
+
+If any tool returns that error, stop and ASK THE USER to run
+`php artisan chimera:mcp-init`. Do NOT attempt to run the command yourself —
+it prompts the user interactively for dictionary file paths that only the user
+can provide. Do NOT use `get-artefact-examples`,
+`laravel-boost_database-schema`, database queries, file exploration, or any
+other workaround to gather data structure information while uninitialized.
+Ask the user and wait.
 
 ## Artefacts
 
@@ -65,6 +85,7 @@ This server exposes two MCP Resources with example implementations:
 - "Indicator" means a Plotly chart. If the user says "indicator" generically, ask: do you mean a chart, scorecard, gauge, map, or report?
 - **Complete Steps 0-1-2 in order. Do not skip to creation (Step 3) before reading examples (Step 2).**
 - **Do NOT explore consumer app files (`app/`, `vendor/`, `config/`) for code patterns.** Call `get-artefact-examples` instead — it is the ONLY source of code patterns.
+- **Do NOT use `laravel-boost_database-schema`, database queries, or file exploration to discover the data structure.** `read-dictionary` is the ONLY source of record→table and item→column mappings. If it fails, abort (see Failure protocol).
 - Example files show complete `getData()` implementations. Use them as templates and adapt `select`/`from`/`where`/`groupBy` to your specific data.
 
 ## Required Workflow
@@ -81,6 +102,10 @@ Each record has a `breakoutTable` property — the lowercase table name to use i
 `BreakoutQueryBuilder->from()` calls (e.g. `"POP_REC"` → `"pop_rec"`). Value
 sets tell you what coded values mean (e.g. P11=1 means "Male").
 
+If `read-dictionary` returns an error about no dictionary being registered,
+stop the workflow and ask the user to run `php artisan chimera:mcp-init`. Do
+not continue to Step 2.
+
 ### Step 2: Read example implementations
 Before creating an artefact, read example implementations for the matching type.
 Call `get-artefact-examples` with `type` (e.g. `"scorecard"`) to list available
@@ -90,6 +115,15 @@ examples, then call it again with `type` and `name` (e.g.
 Examples show complete `getData()` implementations. Study the pattern that best
 matches the user's query and use it as your template in Step 4.
 
+**Namespace caveat:** Example files live under `App\Livewire\Scorecard\Demographics\…`
+(or similar category folders). That `Demographics` directory is just the example's
+home — the create tool does NOT reproduce it. Created artefacts are placed under a
+directory derived from the data source **title** (e.g. `KenyaCensus`, not
+`Demographics`). When calling `validate-artefact`, `edit-*`, `manage-page-assignment`,
+or any name-bearing tool after creation, ALWAYS use the full prefixed name returned
+by the create tool (e.g. `"KenyaCensus/TotalPopulation"`), never the example's
+directory and never the bare name you supplied as input.
+
 ### Step 3: Create the artefact
 Call `create-indicator`, `create-scorecard`, `create-gauge`, `create-report`,
 or `create-map-indicator`.
@@ -97,17 +131,17 @@ or `create-map-indicator`.
 **`name` parameter:** Provide only the artefact name (e.g. `"BirthRate"`). The
 data source title is auto-prepended as a directory (`"Households/BirthRate"`).
 
-**`chart_type` (indicators only):** bar, line, scatter, pie, histogram, area,
-box, sunburst. If the user didn't specify one, recommend based on the data:
+**Name tracking (critical):** The create tool stores the artefact with this
+prefixed name (e.g. `"KenyaCensus/BirthRate"`, NOT the bare `"BirthRate"` you
+passed). The success response echoes that full name. **All subsequent tools**
+(`edit-chart`, `validate-artefact`, `edit-indicator`, `edit-*`,
+`manage-page-assignment`) require this full prefixed name as their `name`
+parameter — never the bare name from your input. Copy it verbatim from the
+create tool's response.
 
-- **Bar** — compare categories across groups
-- **Line** — show trends over time or along a sequence
-- **Scatter** — show relationship between two variables
-- **Pie** — show proportions of a whole
-- **Histogram** — show distribution of a continuous variable
-- **Area** — emphasize magnitude of change over time
-- **Box** — show spread, quartiles, and outliers
-- **Sunburst** — show hierarchical proportions
+The create tools generate a stub with an empty `getData()` and a sensible
+default chart layout. Do NOT pass `chart_type` — all chart visualization is
+configured later in Step 5 via `edit-chart`.
 
 ### Step 4: Implement getData()
 The create tools generate a stub with an empty `getData()`. You MUST implement it:
@@ -124,6 +158,7 @@ public function getData(string $filterPath): Collection
     return (new BreakoutQueryBuilder($this->indicator->data_source, $filterPath))
         ->select([DB::raw('COUNT(*) AS total')])
         ->from(['pop_rec'])                // lowercase dict record name, always an array
+        ->where(["sex = 'Male'"])          // array of raw SQL conditions, joined with AND
         ->groupBy(['area_code'])
         ->lastlyAreaLeftJoinData()         // optional: adds area name column
         ->get();
@@ -197,6 +232,7 @@ public function getData(string $filterPath): Collection
 |--------|-------|
 | `select([...])` | Use `DB::raw()` for expressions. Aliases must match Plotly `meta.columnNames`. |
 | `from([...])` | Lowercase dict record name, always an array. |
+| `where([...])` | Array of raw SQL condition strings joined with `AND`. **NOT** `->where('col', 'value')` like Laravel's query builder. Pass as many conditions as needed in a single array: `->where(["sex = 'Male'", "age > 18"])`. |
 | `groupBy([...])` | Required with aggregate functions. |
 | `orderBy([...])` | Append `ASC` or `DESC`. |
 | `lastlyAreaLeftJoinData()` | Appends area name column. Needs `groupBy(['area_code', ...])` first. |
@@ -230,9 +266,20 @@ After implementing getData(), you must configure the Plotly visualization before
 it can render. Call `edit-chart` with the indicator name and your hand-crafted
 Plotly trace definitions:
 
-- **`name`**: The indicator name (same as used in step 3)
+- **`name`**: The FULL indicator name including the data source prefix directory
+  (e.g. `"KenyaCensus/BirthRate"`), as returned by the create tool in Step 3.
+  Do NOT pass the bare name you supplied at creation — that will not be found.
 - **`data`**: Array of Plotly trace objects. Each trace requires:
-  - `type` — chart type (`"bar"`, `"scatter"`, `"pie"`, etc.)
+  - `type` — chart type. If the user didn't specify one, recommend based on the
+    data:
+    - **Bar** — compare categories across groups
+    - **Line** — show trends over time or along a sequence
+    - **Scatter** — show relationship between two variables
+    - **Pie** — show proportions of a whole
+    - **Histogram** — show distribution of a continuous variable
+    - **Area** — emphasize magnitude of change over time
+    - **Box** — show spread, quartiles, and outliers
+    - **Sunburst** — show hierarchical proportions
   - `meta.columnNames` — maps trace properties (`x`, `y`, `labels`, `values`)
     to the SQL aliases from your `getData()` SELECT. These MUST match exactly.
   - `name` — display label for the legend
@@ -249,7 +296,8 @@ After the chart design is saved, proceed to Step 6 to validate.
 
 ### Step 6: Validate
 
-After implementing getData(), call `validate-artefact` with the same `type` and `name` you used for creation. This will:
+After implementing getData(), call `validate-artefact` with the `type` and the
+FULL prefixed `name` returned by the create tool (Step 3). This will:
 
 1. Confirm the data source is connectible
 2. Instantiate the artefact class from the generated file
@@ -263,8 +311,8 @@ If validation fails, fix the error (column name mismatch, missing import, etc.) 
 ## Editing Artefacts
 Use these tools after creation, only if the user requests changes to artefacts:
 - `edit-indicator` — title, description, help, published, scope (use `edit-chart` for traces and layout)
-- `edit-scorecard` — title, description, published, scope
-- `edit-gauge` — title, subtitle, description, published
+- `edit-scorecard` — title, published, scope
+- `edit-gauge` — title, subtitle, published
 - `edit-map-indicator` — title, description, published
 - `edit-report` — title, description, published, enabled
 - `manage-page-assignment` — attach/detach artefacts to/from pages
@@ -277,7 +325,8 @@ for ad-hoc exploration.
 
 ## CSPro Dictionary Files
 JSON (CSPro 8+) or INI (pre-8.0) format. Use `read-dictionary` with `data_source`
-for pre-registered dictionaries (via `chimera:mcp-init`), or pass raw `content`.
+(pre-registered via `chimera:mcp-init` — see Prerequisites), or pass raw
+`content`.
 
 Parsed structure: `levels[]` → `records[]` → `items[]` → `valueSets[]`.
 

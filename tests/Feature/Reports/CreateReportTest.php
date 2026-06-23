@@ -339,7 +339,7 @@ describe('MCP Path', function () {
             ]);
 
         $response->assertOk();
-        $response->assertSee('Report created successfully');
+        $response->assertSee("'TestReport' created successfully");
     });
 
     it('rejects invalid parameters with error response', function () {

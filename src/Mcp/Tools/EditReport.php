@@ -8,15 +8,21 @@ use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
 use Uneca\Chimera\Mcp\Tools\Concerns\ForceModelUpdate;
+use Uneca\Chimera\Mcp\Tools\Concerns\RequiresInitializedMcp;
 use Uneca\Chimera\Models\Report;
 
 #[Description('Update a report\'s metadata after creation. Finds the report by name and updates only the provided fields. If this tool fails, report the error and stop — do not fall back to workarounds.')]
 class EditReport extends Tool
 {
     use ForceModelUpdate;
+    use RequiresInitializedMcp;
 
     public function handle(Request $request): Response
     {
+        if ($abort = $this->abortIfNotInitialized()) {
+            return $abort;
+        }
+
         $name = $request->get('name');
         if (empty($name)) {
             return Response::error('The "name" parameter is required');

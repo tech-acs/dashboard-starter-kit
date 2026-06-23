@@ -8,6 +8,7 @@ use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
+use Uneca\Chimera\Mcp\Tools\Concerns\RequiresInitializedMcp;
 use Uneca\Chimera\Models\Gauge;
 use Uneca\Chimera\Models\Indicator;
 use Uneca\Chimera\Models\MapIndicator;
@@ -18,8 +19,14 @@ use Uneca\Chimera\Services\DashboardComponentFactory;
 #[Description('Validate a generated artefact by executing getData() and confirming it returns data. Call this after implementing getData() in a created artefact. Runs three checks: (1) data source connectivity, (2) artefact instantiation, (3) getData() execution with an empty filter path (national scope). Returns success status, row count, column names, and the first row as a sample. If this tool fails, report the error and stop — do not fall back to workarounds.')]
 class ValidateArtefact extends Tool
 {
+    use RequiresInitializedMcp;
+
     public function handle(Request $request): Response
     {
+        if ($abort = $this->abortIfNotInitialized()) {
+            return $abort;
+        }
+
         $type = (string) $request->string('type', '');
         $name = (string) $request->string('name', '');
 
@@ -97,7 +104,7 @@ class ValidateArtefact extends Tool
             'type' => $schema->string()->enum(['scorecard', 'gauge', 'indicator', 'map-indicator', 'report'])
                 ->description('Type of artefact to validate'),
             'name' => $schema->string()
-                ->description('Name of the artefact (e.g. "TotalFemalePopulation", "Households/BirthRate"). Matches the name used in the create-* tool call.'),
+                ->description('FULL artefact name including data source prefix directory, as returned by the create-* tool (e.g. "KenyaCensus/TotalFemalePopulation", "Households/BirthRate"). NOT the bare name you passed as input to create-*.'),
         ];
     }
 }

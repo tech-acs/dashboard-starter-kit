@@ -9,12 +9,19 @@ use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
 use Uneca\Chimera\Mcp\Services\ArtefactExampleService;
+use Uneca\Chimera\Mcp\Tools\Concerns\RequiresInitializedMcp;
 
 #[Description('Read example implementations to use as templates when creating artefacts. Call with just "type" to list available examples, or with "type" and "name" to get the full PHP source code of a specific example.')]
 class GetArtefactExamples extends Tool
 {
+    use RequiresInitializedMcp;
+
     public function handle(Request $request): Response|ResponseFactory
     {
+        if ($abort = $this->abortIfNotInitialized()) {
+            return $abort;
+        }
+
         $service = app(ArtefactExampleService::class);
         $type = $request->get('type');
         $name = $request->get('name');

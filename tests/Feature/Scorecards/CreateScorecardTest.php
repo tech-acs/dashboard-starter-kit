@@ -331,7 +331,7 @@ describe('MCP Path', function () {
             ]);
 
         $response->assertOk();
-        $response->assertSee('Scorecard created successfully');
+        $response->assertSee("'TestScorecard' created successfully");
     });
 
     it('rejects invalid parameters with error response', function () {

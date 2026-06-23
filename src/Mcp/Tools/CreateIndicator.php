@@ -10,6 +10,7 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
 use Uneca\Chimera\Actions\Maker\CreateArtefactAction;
 use Uneca\Chimera\DTOs\IndicatorAttributes;
+use Uneca\Chimera\Mcp\Tools\Concerns\RequiresInitializedMcp;
 use Uneca\Chimera\Models\DataSource;
 use Uneca\Chimera\Models\Indicator;
 use Uneca\Chimera\Validation\IndicatorValidationRules;
@@ -17,8 +18,14 @@ use Uneca\Chimera\Validation\IndicatorValidationRules;
 #[Description('Create a new indicator (Plotly chart) artefact. Generates a Livewire component file from a stub and creates the database record. Prerequisites: call get-data-sources first and ask the user which data source to use, then parse the dictionary with read-dictionary. Read example implementations via get-artefact-examples before calling this tool. If this tool fails, report the error and stop — do not fall back to workarounds.')]
 class CreateIndicator extends Tool
 {
+    use RequiresInitializedMcp;
+
     public function handle(Request $request, CreateArtefactAction $createArtefactAction): Response
     {
+        if ($abort = $this->abortIfNotInitialized()) {
+            return $abort;
+        }
+
         $validator = Validator::make($request->toArray(), IndicatorValidationRules::rules());
 
         if ($validator->fails()) {
@@ -37,30 +44,32 @@ class CreateIndicator extends Tool
 
         $validated['name'] = preg_replace('/\s+/', '', $dataSource->title).'/'.$validated['name'];
 
-        $chartType = $validated['chart_type'] ?? 'default';
-        $stub = resource_path("stubs/indicators/{$chartType}.stub");
-
-        $attributes = new IndicatorAttributes(
-            name: $validated['name'],
-            title: $validated['title'],
-            dataSource: $validated['data_source'],
-            type: $chartType,
-            description: $validated['description'] ?? null,
-            data: $validated['data'] ?? [],
-            layout: $validated['layout'] ?? [
+        $layoutInput = $validated['layout'] ?? [];
+        if ($layoutInput === []) {
+            $layoutInput = [
                 'showlegend' => true,
                 'legend' => ['orientation' => 'h', 'x' => 0, 'y' => 1.12],
                 'xaxis' => ['type' => 'category', 'tickmode' => 'auto', 'automargin' => true],
                 'margin' => ['l' => 60, 'r' => 30, 't' => 15, 'b' => 40],
                 'dragmode' => 'pan',
-            ],
-            stub: $stub,
+            ];
+        }
+
+        $attributes = new IndicatorAttributes(
+            name: $validated['name'],
+            title: $validated['title'],
+            dataSource: $validated['data_source'],
+            type: 'default',
+            description: $validated['description'] ?? null,
+            data: $validated['data'] ?? [],
+            layout: (array) $layoutInput,
+            stub: resource_path('stubs/indicators/default.stub'),
         );
 
         $result = $createArtefactAction->execute(modelClass: Indicator::class, baseNamespace: '\Livewire\Indicator', attributes: $attributes);
 
         if ($result->success) {
-            return Response::text("Indicator created successfully at {$result->filePath}");
+            return Response::text("Indicator '{$result->artefact->name}' created successfully at {$result->filePath}. Use this full name (including the data source prefix) for all subsequent tools (edit-chart, validate-artefact, edit-indicator).");
         }
 
         return Response::error("Failed to create indicator. {$result->errorMessage}");
@@ -73,9 +82,8 @@ class CreateIndicator extends Tool
             'title' => $schema->string()->description('Human-readable title'),
             'description' => $schema->string()->description('Human-readable description'),
             'data_source' => $schema->string()->description('Name of the data source this indicator queries (use the `name` field from get-data-sources, e.g. "households")'),
-            'chart_type' => $schema->string()->default('default')->description('Chart type (default, bar, line, pie, etc.). Defaults to "default" which generates an empty stub. If a specific chart type (bar, line, pie) is given, the stub will include sample code for that chart type.'),
-            'data' => $schema->string()->description('Optional JSON array of Plotly trace objects. If omitted, an empty array is used.'),
-            'layout' => $schema->string()->description('Optional JSON object for Plotly layout. If omitted, a sensible default layout is used.'),
+            'data' => $schema->array()->description('Optional array of Plotly trace objects. If omitted, an empty array is used — configure the traces afterwards via edit-chart.')->nullable(),
+            'layout' => $schema->object()->description('Optional Plotly layout object. If omitted, a sensible default layout is used. You may override specific fields (e.g. title, xaxis, yaxis, margin).')->nullable(),
         ];
     }
 }

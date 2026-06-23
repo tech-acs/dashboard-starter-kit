@@ -10,6 +10,7 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
 use Uneca\Chimera\Actions\Maker\CreateArtefactAction;
 use Uneca\Chimera\DTOs\ScorecardAttributes;
+use Uneca\Chimera\Mcp\Tools\Concerns\RequiresInitializedMcp;
 use Uneca\Chimera\Models\DataSource;
 use Uneca\Chimera\Models\Scorecard;
 use Uneca\Chimera\Validation\ScorecardValidationRules;
@@ -17,11 +18,17 @@ use Uneca\Chimera\Validation\ScorecardValidationRules;
 #[Description('Create a new scorecard (numeric summary card) artefact. Generates a Livewire component file from a stub and creates the database record. Prerequisites: call get-data-sources first and ask the user which data source to use, then parse the dictionary with read-dictionary. Read example implementations via get-artefact-examples before calling this tool. If this tool fails, report the error and stop — do not fall back to workarounds.')]
 class CreateScorecard extends Tool
 {
+    use RequiresInitializedMcp;
+
     /**
      * Handle the tool request.
      */
     public function handle(Request $request, CreateArtefactAction $createArtefactAction): Response
     {
+        if ($abort = $this->abortIfNotInitialized()) {
+            return $abort;
+        }
+
         $validator = Validator::make($request->toArray(), ScorecardValidationRules::rules());
 
         if ($validator->fails()) {
@@ -50,7 +57,7 @@ class CreateScorecard extends Tool
         $result = $createArtefactAction->execute(modelClass: Scorecard::class, baseNamespace: '\Livewire\Scorecard', attributes: $scorecardAttributes);
 
         if ($result->success) {
-            return Response::text("Scorecard created successfully at {$result->filePath}");
+            return Response::text("Scorecard '{$result->artefact->name}' created successfully at {$result->filePath}. Use this full name (including the data source prefix) for all subsequent tools (validate-artefact, edit-scorecard).");
         }
 
         return Response::error("Failed to create scorecard. {$result->errorMessage}");

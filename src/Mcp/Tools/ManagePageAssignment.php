@@ -7,6 +7,7 @@ use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
+use Uneca\Chimera\Mcp\Tools\Concerns\RequiresInitializedMcp;
 use Uneca\Chimera\Models\Indicator;
 use Uneca\Chimera\Models\MapIndicator;
 use Uneca\Chimera\Models\Page;
@@ -15,6 +16,8 @@ use Uneca\Chimera\Models\Report;
 #[Description('Attach or detach an artefact (indicator, map_indicator, or report) to/from a page. Use the action parameter to specify "attach" or "detach".')]
 class ManagePageAssignment extends Tool
 {
+    use RequiresInitializedMcp;
+
     private array $modelMap = [
         'indicator' => Indicator::class,
         'map_indicator' => MapIndicator::class,
@@ -23,6 +26,10 @@ class ManagePageAssignment extends Tool
 
     public function handle(Request $request): Response
     {
+        if ($abort = $this->abortIfNotInitialized()) {
+            return $abort;
+        }
+
         $artefactType = $request->get('artefact_type');
         $artefactName = $request->get('artefact_name');
         $pageSlug = $request->get('page_slug');
