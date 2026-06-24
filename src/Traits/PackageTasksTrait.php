@@ -22,7 +22,7 @@ trait PackageTasksTrait
         'ext-zip:*',
         'ext-pgsql:*',
         'gasparesganga/php-shapefile:^3.4',
-        'spatie/laravel-permission:^7.4',
+        'spatie/laravel-permission:^8.0',
         'spatie/simple-excel:^3.5',
         'spatie/laravel-translatable:^6.1',
         'spatie/db-dumper:^4.1',
