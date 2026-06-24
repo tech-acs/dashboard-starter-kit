@@ -20,8 +20,9 @@ class ColorPalette
         });
     }
 
-    public static function palette(string $paletteName): ?object
+    public static function palette(?string $paletteName = null): ?object
     {
+        $paletteName ??= self::all()->first()?->name ?? 'Chimera';
         $index = self::all()->search(function ($palette) use ($paletteName) {
             return $palette->name === $paletteName;
         });
