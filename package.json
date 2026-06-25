@@ -7,5 +7,5 @@
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
   },
-  "version": "5.5.1"
+  "version": "6.0.0"
 }
