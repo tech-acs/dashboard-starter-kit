@@ -55,7 +55,7 @@
                                         @endif
 
                                         <x-chimera::featured-chart-card :indicator="$indicator">
-                                            @livewire($indicator->component, ['indicator' => $indicator, 'isBeingFeatured' => true, 'lazy' => true])
+                                            @livewire('indicator.' . $indicator->component, ['indicator' => $indicator, 'isBeingFeatured' => true, 'lazy' => true])
                                         </x-chimera::featured-chart-card>
 
                                         @if ((($loop->iteration % 2) === 0) || $loop->last)

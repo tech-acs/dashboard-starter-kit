@@ -1,0 +1,64 @@
+<?php
+
+namespace Uneca\Chimera\Mcp\Tools;
+
+use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Laravel\Mcp\Request;
+use Laravel\Mcp\Response;
+use Laravel\Mcp\Server\Attributes\Description;
+use Laravel\Mcp\Server\Tool;
+use Uneca\Chimera\Mcp\Tools\Concerns\ForceModelUpdate;
+use Uneca\Chimera\Mcp\Tools\Concerns\RequiresInitializedMcp;
+use Uneca\Chimera\Models\Scorecard;
+
+#[Description('Update a scorecard\'s metadata after creation. Finds the scorecard by name and updates only the provided fields. If this tool fails, report the error and stop — do not fall back to workarounds.')]
+class EditScorecard extends Tool
+{
+    use ForceModelUpdate;
+    use RequiresInitializedMcp;
+
+    public function handle(Request $request): Response
+    {
+        if ($abort = $this->abortIfNotInitialized()) {
+            return $abort;
+        }
+
+        $name = $request->get('name');
+        if (empty($name)) {
+            return Response::error('The "name" parameter is required');
+        }
+
+        $scorecard = Scorecard::withoutEagerLoads()->where('name', $name)->first();
+        if (! $scorecard) {
+            return Response::error("Scorecard '{$name}' not found");
+        }
+
+        $update = [];
+
+        if ($request->has('title')) {
+            $update['title'] = $request->get('title');
+        }
+
+        if ($request->has('published')) {
+            $update['published'] = $request->boolean('published');
+        }
+
+        if ($request->has('scope')) {
+            $update['scope'] = $request->get('scope');
+        }
+
+        $this->forceUpdate($scorecard, $update);
+
+        return Response::text('Scorecard updated successfully');
+    }
+
+    public function schema(JsonSchema $schema): array
+    {
+        return [
+            'name' => $schema->string()->description('Name of the scorecard to edit'),
+            'title' => $schema->string()->description('New title (optional)')->nullable(),
+            'published' => $schema->boolean()->description('Published status (optional)')->nullable(),
+            'scope' => $schema->string()->description('Scope (optional)')->nullable(),
+        ];
+    }
+}

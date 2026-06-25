@@ -22,7 +22,7 @@ trait PackageTasksTrait
         'ext-zip:*',
         'ext-pgsql:*',
         'gasparesganga/php-shapefile:^3.4',
-        'spatie/laravel-permission:^7.4',
+        'spatie/laravel-permission:^8.0',
         'spatie/simple-excel:^3.5',
         'spatie/laravel-translatable:^6.1',
         'spatie/db-dumper:^4.1',
@@ -31,10 +31,10 @@ trait PackageTasksTrait
 
     public array $vendorPublish = [
         'Chimera config' => ['--tag=chimera-config', '--force'],
+        'Spatie permissions' => ['--provider=Spatie\Permission\PermissionServiceProvider', '--force'],
         'Chimera migrations' => ['--tag=chimera-migrations', '--force'],
         'Chimera stubs' => ['--tag=chimera-stubs'],
         'Livewire config' => ['--tag=livewire:config'],
-        'Spatie permissions' => ['--provider=Spatie\Permission\PermissionServiceProvider', '--force'],
         'Log Viewer config' => ['--tag=log-viewer-config'],
         'Log Viewer assets' => ['--tag=log-viewer-assets'],
     ];
@@ -80,22 +80,11 @@ trait PackageTasksTrait
     protected function copyCustomizedJetstreamFiles(): void
     {
         $this->components->info('Copying customized Jetstream files');
-        $this->components->task('Jetstream actions', function () {
-            return $this->copyFilesInDir(__DIR__.'/../../deploy/jetstream-modifications/actions', app_path('Actions/Fortify'));
-        });
         foreach ($this->customizedJetstreamViews as $source => $destination) {
             $this->components->task($source, function () use ($source, $destination) {
                 return copy(__DIR__."/../../deploy/jetstream-modifications/views/$source", resource_path($destination));
             });
         }
-    }
-
-    protected function copyActionClasses(): void
-    {
-        $this->components->info('Copying action classes');
-        $this->components->task('Actions', function () {
-            return File::copyDirectory(__DIR__.'/../../deploy/actions/Maker', app_path('Actions/Maker'));
-        });
     }
 
     protected function configureJetstreamFeatures(): void

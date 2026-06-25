@@ -2,10 +2,12 @@
 
 namespace Uneca\Chimera;
 
+use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Exceptions\InvalidSignatureException;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
@@ -14,10 +16,12 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Laravel\Fortify\Fortify;
+use Laravel\Mcp\Facades\Mcp;
 use Livewire\Livewire;
 use Opcodes\LogViewer\Facades\LogViewer;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Uneca\Chimera\Actions\CreateNewUser;
 use Uneca\Chimera\Commands\Adminify;
 use Uneca\Chimera\Commands\CacheCaseStats;
 use Uneca\Chimera\Commands\CacheClear;
@@ -41,8 +45,9 @@ use Uneca\Chimera\Commands\MakeQueryFragment;
 use Uneca\Chimera\Commands\MakeReferenceValueSynthesizer;
 use Uneca\Chimera\Commands\MakeReport;
 use Uneca\Chimera\Commands\MakeScorecard;
+use Uneca\Chimera\Commands\McpInit;
 use Uneca\Chimera\Commands\Production;
-use Uneca\Chimera\Commands\ResetSettings;
+use Uneca\Chimera\Commands\RunArtefactGetData;
 use Uneca\Chimera\Commands\TransferReferenceValues;
 use Uneca\Chimera\Commands\Update;
 use Uneca\Chimera\Components\ChartCard;
@@ -81,6 +86,7 @@ use Uneca\Chimera\Livewire\SpecialSectionBorder;
 use Uneca\Chimera\Livewire\SubscribeToReportNotification;
 use Uneca\Chimera\Livewire\UserPageSizeAdjuster;
 use Uneca\Chimera\Livewire\XRay;
+use Uneca\Chimera\Mcp\Servers\DashboardStarterKit;
 use Uneca\Chimera\Models\AreaHierarchy;
 use Uneca\Chimera\Models\Setting;
 use Uneca\Chimera\Services\ConnectionLoader;
@@ -150,6 +156,7 @@ class ChimeraServiceProvider extends PackageServiceProvider
                 MakeReport::class,
                 MakeScorecard::class,
                 MakeGauge::class,
+                McpInit::class,
                 Update::class,
                 Production::class,
                 CustomJetstreamInstallCommand::class,
@@ -159,7 +166,7 @@ class ChimeraServiceProvider extends PackageServiceProvider
                 TransferReferenceValues::class,
                 ChimeraArtefactGenerator::class,
                 ExportAreas::class,
-                ResetSettings::class,
+                RunArtefactGetData::class,
             ]);
     }
 
@@ -197,6 +204,8 @@ class ChimeraServiceProvider extends PackageServiceProvider
 
     public function packageBooted()
     {
+        $this->configureCacheSerializableClasses();
+
         Gate::before(function ($user, $ability) {
             if ($ability === 'developer-mode') {
                 return null;
@@ -237,6 +246,8 @@ class ChimeraServiceProvider extends PackageServiceProvider
                 ->with(['encryptedEmail' => Crypt::encryptString($request->email)]);
         });
 
+        Fortify::createUsersUsing(CreateNewUser::class);
+
         $router = $this->app->make(Router::class);
         $router->pushMiddlewareToGroup('web', CheckAccountSuspension::class);
         $router->pushMiddlewareToGroup('web', Language::class);
@@ -258,7 +269,7 @@ class ChimeraServiceProvider extends PackageServiceProvider
         $this->app->singleton('settings', function () {
             try {
                 if (Schema::hasTable('settings')) {
-                    return Cache::rememberForever('settings', fn () => Setting::all()->pluck('value', 'key'));
+                    return collect(Cache::rememberForever('settings', fn () => Setting::all()->pluck('value', 'key')->toArray()));
                 }
             } catch (\Exception) {
                 //
@@ -291,5 +302,33 @@ class ChimeraServiceProvider extends PackageServiceProvider
                 return collect();
             }
         });
+
+        Mcp::local('dashboard-starter-kit', DashboardStarterKit::class);
+    }
+
+    private function configureCacheSerializableClasses(): void
+    {
+        $chimeraClasses = [
+            Carbon::class,
+            Collection::class,
+            \stdClass::class,
+        ];
+
+        $current = config('cache.serializable_classes');
+
+        match (true) {
+            $current === true => null,
+            is_array($current) => config([
+                'cache.serializable_classes' => array_unique(array_merge($current, $chimeraClasses)),
+            ]),
+            default => config(['cache.serializable_classes' => $chimeraClasses]),
+        };
+
+        try {
+            $manager = app('cache');
+            $property = new \ReflectionProperty($manager, 'stores');
+            $property->setValue($manager, []);
+        } catch (\Exception) {
+        }
     }
 }

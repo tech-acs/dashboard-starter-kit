@@ -1,13 +1,19 @@
 <?php
 
-namespace Uneca\CensusDashboardStarterKit\Tests;
+namespace Uneca\Chimera\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Laravel\Mcp\Server\McpServiceProvider;
+use Opcodes\LogViewer\LogViewerServiceProvider;
+use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
-use Uneca\CensusDashboardStarterKit\ChimeraServiceProvider;
+use Uneca\Chimera\ChimeraServiceProvider;
+use Uneca\Chimera\Mcp\Services\DictionaryRegistryService;
 
 class TestCase extends Orchestra
 {
+    use WithWorkbench;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -15,22 +21,39 @@ class TestCase extends Orchestra
         Factory::guessFactoryNamesUsing(
             fn (string $modelName) => 'Uneca\\CensusDashboardStarterKit\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
+
+        $registry = new class extends DictionaryRegistryService
+        {
+            public function isInitialized(): bool
+            {
+                return true;
+            }
+
+            public function registeredDictionaries(): array
+            {
+                return ['households' => '/dev/null/sample.dcf'];
+            }
+
+            public function registeredDataSources(): string
+            {
+                return 'households';
+            }
+        };
+        $this->app->instance(DictionaryRegistryService::class, $registry);
     }
 
     protected function getPackageProviders($app)
     {
         return [
             ChimeraServiceProvider::class,
+            LogViewerServiceProvider::class,
+            McpServiceProvider::class,
         ];
     }
 
     public function getEnvironmentSetUp($app)
     {
         config()->set('database.default', 'testing');
-
-        /*
-        $migration = include __DIR__.'/../database/migrations/create_census-dashboard-starter-kit_table.php.stub';
-        $migration->up();
-        */
+        config()->set('session.driver', 'array');
     }
 }

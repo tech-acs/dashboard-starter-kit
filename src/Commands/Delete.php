@@ -17,7 +17,7 @@ class Delete extends Command
     public function handle()
     {
         $modelTypeMenu = [
-            'Indicator' => "App\Livewire",
+            'Indicator' => "App\Livewire\Indicator",
             'Scorecard' => "App\Livewire\Scorecard",
             'Gauge' => "App\Livewire\Gauge",
             'Report' => "App\Reports",

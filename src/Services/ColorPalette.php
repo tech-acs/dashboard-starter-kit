@@ -13,11 +13,11 @@ class ColorPalette
             $colorPalettes = collect();
             $colorPalettesDir = resource_path('color_palettes');
             foreach (glob("$colorPalettesDir/*.json") as $paletteFile) {
-                $colorPalettes[] = json_decode(file_get_contents($paletteFile));
+                $colorPalettes[] = json_decode(file_get_contents($paletteFile), true);
             }
 
             return $colorPalettes;
-        });
+        })->map(fn ($palette) => (object) $palette);
     }
 
     public static function palette(?string $paletteName = null): ?object

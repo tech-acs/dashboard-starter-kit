@@ -17,12 +17,12 @@ You can choose to have some working sample code included in the generated file s
 
 You can also choose to use indicator templates that have already been partially built out by us (and hopefully other contributors or yourself using the chart builder tool we include).
 
-:::caution
+:::warning
 Please pay special attention when you provide a name for your indicator. It is what will became both the class and file name for you indicator and will create directories if you specify it.
 When creating, please read the prompts and hints very carefully.
 :::
 
-For example, the following will result in the creation of a folder called Enumeration in the <span className='text--danger text--light'>app/Livewire</span> directory and a file named *HouseholdsEnumerated.php* inside the Enumeration directory.
+For example, the following will result in the creation of a folder called Enumeration in the `app/Livewire` directory and a file named *HouseholdsEnumerated.php* inside the Enumeration directory.
 
 ![Make indicator command example](/img/developer/building-your-dashboard/make-indicator-command.png)
 

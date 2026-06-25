@@ -29,7 +29,7 @@ In the example below, all js, css and image files will be published and this mig
 php artisan chimera:update --assets
 ```
 
-:::caution
+:::warning
 Please be aware that when you re-publish previously published resources, changes you might have made to those resources after installation will likely be overwritten. 
 Under normal circumstances, you will likely not have modified any of these resources but be aware that this might happen.
 

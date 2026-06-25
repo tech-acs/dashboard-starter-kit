@@ -15,3 +15,6 @@ node_modules
 # VitePress specific
 /docs/.vitepress/dist
 /docs/.vitepress/cache
+
+.phpunit.cache
+.codegraph

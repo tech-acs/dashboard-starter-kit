@@ -21,7 +21,6 @@ class Chimera extends Command
         $this->installPhpDependencies();
         $this->publishVendorFiles();
         $this->copyCustomizedJetstreamFiles();
-        $this->copyActionClasses();
         $this->configureJetstreamFeatures();
         $this->copyAssets();
         $this->copyColorPalettes();

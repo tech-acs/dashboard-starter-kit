@@ -4,6 +4,7 @@ namespace Uneca\Chimera\Services;
 
 use Exception;
 use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Schema;
 use Pdo\Mysql;
 use Uneca\Chimera\Models\DataSource;
 
@@ -39,6 +40,10 @@ class ConnectionLoader
 
     public function __invoke(): void
     {
+        if (! Schema::hasTable('data_sources')) {
+            return;
+        }
+
         try {
             $connections = DataSource::active()->get();
 

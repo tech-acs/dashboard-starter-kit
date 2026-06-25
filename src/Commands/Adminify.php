@@ -4,6 +4,7 @@ namespace Uneca\Chimera\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Role;
 use Uneca\Chimera\Models\User;
 
@@ -27,9 +28,17 @@ class Adminify extends Command
         parent::__construct();
     }
 
-    private function permissionsEnabled()
+    private function permissionsEnabled(): bool
     {
-        return class_exists(Role::class);
+        if (! class_exists(Role::class)) {
+            return false;
+        }
+
+        try {
+            return Schema::hasTable('roles');
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     public function handle()
@@ -43,12 +52,16 @@ class Adminify extends Command
                     ['email' => $email],
                     ['name' => $name, 'password' => Hash::make($password)]
                 );
-                Role::updateOrCreate(
-                    ['name' => self::ROLE],
-                    ['guard_name' => 'web']
-                );
-                $user->assignRole(self::ROLE);
-                info('Super Admin created as per values in env');
+                if ($this->permissionsEnabled()) {
+                    Role::updateOrCreate(
+                        ['name' => self::ROLE],
+                        ['guard_name' => 'web']
+                    );
+                    $user->assignRole(self::ROLE);
+                    info('Super Admin created as per values in env');
+                } else {
+                    info('Super Admin user created. Permissions tables not yet available, role was not assigned.');
+                }
             } else {
                 alert('Super Admin values not set in env');
             }
