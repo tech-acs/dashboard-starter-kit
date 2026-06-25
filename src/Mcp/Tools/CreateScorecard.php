@@ -15,7 +15,7 @@ use Uneca\Chimera\Models\DataSource;
 use Uneca\Chimera\Models\Scorecard;
 use Uneca\Chimera\Validation\ScorecardValidationRules;
 
-#[Description('Create a new scorecard (numeric summary card) artefact. Generates a Livewire component file from a stub and creates the database record. Prerequisites: call get-data-sources first and ask the user which data source to use, then parse the dictionary with read-dictionary. Read example implementations via get-artefact-examples before calling this tool. If this tool fails, report the error and stop — do not fall back to workarounds.')]
+#[Description('Create a new scorecard (numeric summary card) artefact. Generates a Livewire component file from a stub and creates the database record. Prerequisites: call get-data-sources first, parse the dictionary with read-dictionary, read examples via get-artefact-examples. After creation: (1) implement getData() using BreakoutQueryBuilder, (2) call guide-breakout-query-builder for API reference, (3) call validate-artefact to test it. Scorecards use getSingleRow() for scalar values.')]
 class CreateScorecard extends Tool
 {
     use RequiresInitializedMcp;

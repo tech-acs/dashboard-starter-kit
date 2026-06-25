@@ -47,6 +47,7 @@ use Uneca\Chimera\Commands\MakeReport;
 use Uneca\Chimera\Commands\MakeScorecard;
 use Uneca\Chimera\Commands\McpInit;
 use Uneca\Chimera\Commands\Production;
+use Uneca\Chimera\Commands\RunArtefactGetData;
 use Uneca\Chimera\Commands\TransferReferenceValues;
 use Uneca\Chimera\Commands\Update;
 use Uneca\Chimera\Components\ChartCard;
@@ -165,6 +166,7 @@ class ChimeraServiceProvider extends PackageServiceProvider
                 TransferReferenceValues::class,
                 ChimeraArtefactGenerator::class,
                 ExportAreas::class,
+                RunArtefactGetData::class,
             ]);
     }
 

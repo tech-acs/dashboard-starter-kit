@@ -12,7 +12,7 @@ use Uneca\Chimera\Mcp\Services\DictionaryRegistryService;
 use Uneca\Chimera\Mcp\Tools\Concerns\RequiresInitializedMcp;
 use Uneca\Chimera\Services\DictionaryParser;
 
-#[Description('Read a CSPro dictionary (.dcf) file and return its structure: records (tables) with their items (columns), labels, types, and value sets. Use this to understand what data fields are available when writing getData(). Accepts both JSON (CSPro 8+) and INI (pre-CSPro 8.0) formats. You can provide the raw content, or pass a data_source name that was registered via chimera:mcp-init.')]
+#[Description('Read a CSPro dictionary (.dcf) file and return its structure: records (tables) with their items (columns), labels, types, and value sets. Each RECORD maps to a table name for BreakoutQueryBuilder\'s from() method. Each ITEM maps to a column name for the select() method. Use this to discover available fields before implementing getData(). Use summary=true first for a compact overview without value sets. Accepts both JSON (CSPro 8+) and INI (pre-CSPro 8.0) formats. You can provide the raw content, or pass a data_source name that was registered via chimera:mcp-init.')]
 class ReadDictionary extends Tool
 {
     use RequiresInitializedMcp;

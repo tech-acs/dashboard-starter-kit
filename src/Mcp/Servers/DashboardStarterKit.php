@@ -8,6 +8,8 @@ use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Attributes\Version;
 use Uneca\Chimera\Mcp\Resources\ArtefactExampleFile;
 use Uneca\Chimera\Mcp\Resources\ArtefactExampleIndex;
+use Uneca\Chimera\Mcp\Resources\BreakoutQueryBuilderDoc;
+use Uneca\Chimera\Mcp\Resources\PlotlyPatternsDoc;
 use Uneca\Chimera\Mcp\Tools\CreateGauge;
 use Uneca\Chimera\Mcp\Tools\CreateIndicator;
 use Uneca\Chimera\Mcp\Tools\CreateMapIndicator;
@@ -21,6 +23,7 @@ use Uneca\Chimera\Mcp\Tools\EditReport;
 use Uneca\Chimera\Mcp\Tools\EditScorecard;
 use Uneca\Chimera\Mcp\Tools\GetArtefactExamples;
 use Uneca\Chimera\Mcp\Tools\GetDataSources;
+use Uneca\Chimera\Mcp\Tools\GetReferenceValues;
 use Uneca\Chimera\Mcp\Tools\ManagePageAssignment;
 use Uneca\Chimera\Mcp\Tools\ReadDictionary;
 use Uneca\Chimera\Mcp\Tools\ValidateArtefact;
@@ -63,7 +66,7 @@ Ask the user and wait.
 ## Artefacts
 
 Five types:
-- **Indicator** (Plotly chart — "indicator" alone in a user request means this specific chart type, not the generic concept of a dashboard metric)
+- **Indicator** (Plotly chart — "indicator" alone in a user request means this specific artefact type, not the generic concept of a dashboard metric)
 - **Scorecard** (numeric summary card)
 - **Gauge** (visual threshold card)
 - **MapIndicator** (colored map area)
@@ -73,16 +76,18 @@ Every artefact lives in two places: a database record and a PHP class file.
 
 ## Available Resources
 
-This server exposes two MCP Resources with example implementations:
+This server exposes several MCP Resources for reference material:
 
 | URI Pattern | Description |
 |-------------|-------------|
-| `examples://artefact/{type}` | Lists available examples for a type (`scorecard`, `gauge`, `indicator`, `map-indicator`, `report`). Returns JSON with name and description. |
-| `examples://artefact/{type}/{name}` | Returns the complete PHP source of a single example as `text/x-php`. |
+	| `docs://breakout-query-builder` | Full BreakoutQueryBuilder API reference — method chain, join strategies, gotchas, and usage patterns for all artefact types. |
+	| `docs://plotly-patterns` | Plotly chart patterns — trace configurations, meta.columnNames reference, hovertemplate formatting, layout adjustments for bar, scatter, pie, histogram, line, area, and box charts. |
+	| `examples://artefact/{type}` | Lists available examples for a type (`scorecard`, `gauge`, `indicator`, `map-indicator`, `report`). Returns JSON with name and description. |
+	| `examples://artefact/{type}/{name}` | Returns the complete PHP source of a single example as `text/x-php`. |
 
 ## Critical Rules
 
-- "Indicator" means a Plotly chart. If the user says "indicator" generically, ask: do you mean a chart, scorecard, gauge, map, or report?
+- "Indicator" means a Plotly chart.
 - **Complete Steps 0-1-2 in order. Do not skip to creation (Step 3) before reading examples (Step 2).**
 - **Do NOT explore consumer app files (`app/`, `vendor/`, `config/`) for code patterns.** Call `get-artefact-examples` instead — it is the ONLY source of code patterns.
 - **Do NOT use `laravel-boost_database-schema`, database queries, or file exploration to discover the data structure.** `read-dictionary` is the ONLY source of record→table and item→column mappings. If it fails, abort (see Failure protocol).
@@ -129,7 +134,7 @@ Call `create-indicator`, `create-scorecard`, `create-gauge`, `create-report`,
 or `create-map-indicator`.
 
 **`name` parameter:** Provide only the artefact name (e.g. `"BirthRate"`). The
-data source title is auto-prepended as a directory (`"Households/BirthRate"`).
+data source title (trimmed of all spaces and converted to title case) is auto-prepended as a directory (`"Households/BirthRate"`).
 
 **Name tracking (critical):** The create tool stores the artefact with this
 prefixed name (e.g. `"KenyaCensus/BirthRate"`, NOT the bare `"BirthRate"` you
@@ -230,14 +235,16 @@ public function getData(string $filterPath): Collection
 
 | Method | Notes |
 |--------|-------|
-| `select([...])` | Use `DB::raw()` for expressions. Aliases must match Plotly `meta.columnNames`. |
-| `from([...])` | Lowercase dict record name, always an array. |
+| `select([...])` | You can use any valid SQL functions (aggregate) for expressions. Aliases must match Plotly `meta.columnNames`. |
+| `from([...])` | Lowercase dict record name, always an array. You can pass in multiple tables and they will all be inner joined. |
 | `where([...])` | Array of raw SQL condition strings joined with `AND`. **NOT** `->where('col', 'value')` like Laravel's query builder. Pass as many conditions as needed in a single array: `->where(["sex = 'Male'", "age > 18"])`. |
 | `groupBy([...])` | Required with aggregate functions. |
 | `orderBy([...])` | Append `ASC` or `DESC`. |
 | `lastlyAreaLeftJoinData()` | Appends area name column. Needs `groupBy(['area_code', ...])` first. |
 | `get()` | For indicators, map indicators, reports. Returns Collection. |
 | `getSingleRow()` | Returns Collection with 0 or 1 items. Use for scorecards/gauges, then wrap in the expected return format (see above). |
+
+Read the `docs://breakout-query-builder` resource for the complete API reference including join strategies, gotchas, and more.
 
 **Overridable properties (set in the class body):**
 
@@ -279,8 +286,7 @@ Plotly trace definitions:
     - **Histogram** — show distribution of a continuous variable
     - **Area** — emphasize magnitude of change over time
     - **Box** — show spread, quartiles, and outliers
-    - **Sunburst** — show hierarchical proportions
-  - `meta.columnNames` — maps trace properties (`x`, `y`, `labels`, `values`)
+  - `meta.columnNames` — maps trace properties (e.g. `x`, `y`, `labels`, `values`, `text`)
     to the SQL aliases from your `getData()` SELECT. These MUST match exactly.
   - `name` — display label for the legend
   - `hovertemplate`, `marker`, `text` — optional Plotly styling properties
@@ -290,7 +296,13 @@ The tool validates that every column referenced in `meta.columnNames` exists in
 the `getData()` result. If validation fails, fix the mismatch and try again.
 
 Refer to the examples from Step 2 and use your Plotly knowledge to craft
-appropriate traces for the chart type requested by the user.
+appropriate traces for the chart type requested by the user. Read the
+`docs://plotly-patterns` resource for complete trace configurations, hovertemplate
+formatting, and layout adjustments for every chart type.
+
+Do **NOT** set `layout.title` unless the user explicitly requests it. The
+`chart-card` component already renders the indicator title and description
+**above** the Plotly chart. Adding a Plotly title creates visual duplication.
 
 After the chart design is saved, proceed to Step 6 to validate.
 
@@ -320,7 +332,7 @@ Use these tools after creation, only if the user requests changes to artefacts:
 ## Breakout Database
 Questionnaire responses live in a MySQL database. Records become tables
 (lowercased), items become columns. Value set codes (not labels) are stored.
-Access it via `BreakoutQueryBuilder` — use Laravel Boost's `database-query` tool
+Access it via `BreakoutQueryBuilder` — use Laravel Boost's `database-query` tool (if available)
 for ad-hoc exploration.
 
 ## CSPro Dictionary Files
@@ -344,6 +356,7 @@ class DashboardStarterKit extends Server
 {
     protected array $tools = [
         GetDataSources::class,
+        GetReferenceValues::class,
         GetArtefactExamples::class,
         ReadDictionary::class,
         CreateScorecard::class,
@@ -364,6 +377,8 @@ class DashboardStarterKit extends Server
     protected array $resources = [
         ArtefactExampleIndex::class,
         ArtefactExampleFile::class,
+        BreakoutQueryBuilderDoc::class,
+        PlotlyPatternsDoc::class,
     ];
 
     protected array $prompts = [

@@ -13,11 +13,13 @@ use Uneca\Chimera\DTOs\IndicatorAttributes;
 use Uneca\Chimera\Mcp\Tools\Concerns\RequiresInitializedMcp;
 use Uneca\Chimera\Models\DataSource;
 use Uneca\Chimera\Models\Indicator;
+use Uneca\Chimera\Traits\PlotlyDefaults;
 use Uneca\Chimera\Validation\IndicatorValidationRules;
 
-#[Description('Create a new indicator (Plotly chart) artefact. Generates a Livewire component file from a stub and creates the database record. Prerequisites: call get-data-sources first and ask the user which data source to use, then parse the dictionary with read-dictionary. Read example implementations via get-artefact-examples before calling this tool. If this tool fails, report the error and stop — do not fall back to workarounds.')]
+#[Description('Create a new indicator (Plotly chart) artefact. Generates a Livewire component file from a stub and creates the database record. Prerequisites: call get-data-sources first, parse the dictionary with read-dictionary, read examples via get-artefact-examples. After creation: (1) implement getData() in the generated file using BreakoutQueryBuilder, (2) call guide-breakout-query-builder if you need API reference, (3) call validate-artefact to confirm it works, (4) call edit-chart to configure Plotly traces. If this tool fails, report the error and stop — do not fall back to workarounds.')]
 class CreateIndicator extends Tool
 {
+    use PlotlyDefaults;
     use RequiresInitializedMcp;
 
     public function handle(Request $request, CreateArtefactAction $createArtefactAction): Response
@@ -46,13 +48,7 @@ class CreateIndicator extends Tool
 
         $layoutInput = $validated['layout'] ?? [];
         if ($layoutInput === []) {
-            $layoutInput = [
-                'showlegend' => true,
-                'legend' => ['orientation' => 'h', 'x' => 0, 'y' => 1.12],
-                'xaxis' => ['type' => 'category', 'tickmode' => 'auto', 'automargin' => true],
-                'margin' => ['l' => 60, 'r' => 30, 't' => 15, 'b' => 40],
-                'dragmode' => 'pan',
-            ];
+            $layoutInput = self::DEFAULT_LAYOUT;
         }
 
         $attributes = new IndicatorAttributes(
@@ -69,7 +65,7 @@ class CreateIndicator extends Tool
         $result = $createArtefactAction->execute(modelClass: Indicator::class, baseNamespace: '\Livewire\Indicator', attributes: $attributes);
 
         if ($result->success) {
-            return Response::text("Indicator '{$result->artefact->name}' created successfully at {$result->filePath}. Use this full name (including the data source prefix) for all subsequent tools (edit-chart, validate-artefact, edit-indicator).");
+            return Response::text("Indicator '{$result->artefact->name}' created successfully at {$result->filePath}. Use this full name (including the data source prefix) for all subsequent tools (edit-chart, validate-artefact, edit-indicator). Next steps: (1) implement getData() in the generated file using BreakoutQueryBuilder, (2) call guide-breakout-query-builder for API reference, (3) call validate-artefact to test it, (4) call edit-chart to configure traces.");
         }
 
         return Response::error("Failed to create indicator. {$result->errorMessage}");

@@ -10,7 +10,7 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Tool;
 use Uneca\Chimera\Mcp\Tools\Concerns\RequiresInitializedMcp;
 use Uneca\Chimera\Models\Indicator;
-use Uneca\Chimera\Services\DashboardComponentFactory;
+use Uneca\Chimera\DTOs\GetDataResult;
 
 #[Description('Save the Plotly chart design (traces and layout) for an existing indicator. Call this AFTER implementing getData() — the tool verifies getData() returns data and validates that trace meta.columnNames match actual query result columns, then delegates the save to EditIndicator. Use your Plotly knowledge to craft the trace objects with type, meta.columnNames (matching your SQL aliases), name, hovertemplate, etc. The layout is optional.')]
 class EditChart extends Tool
@@ -38,23 +38,17 @@ class EditChart extends Tool
             return Response::error('The "data" parameter must be a non-empty array of Plotly trace objects');
         }
 
-        $instance = DashboardComponentFactory::makeIndicator($indicator);
-        if (is_null($instance)) {
-            return Response::error('Failed to instantiate the indicator class. Ensure getData() is implemented and the file is valid.');
+        $result = $this->runFreshGetData('indicator', $name);
+
+        if (! $result->success) {
+            return Response::error($result->error ?? 'Failed to execute getData().');
         }
 
-        try {
-            $queryData = $instance->getData('');
-        } catch (\Throwable $e) {
-            return Response::error("getData() threw an exception: {$e->getMessage()}. Fix getData() before designing the chart.");
-        }
-
-        if ($queryData->isEmpty()) {
+        if ($result->rowsReturned === 0) {
             return Response::error('getData() returned no rows. The chart cannot be designed without data. Fix getData() first.');
         }
 
-        $sampleRow = $queryData->first();
-        $availableColumns = array_keys(get_object_vars($sampleRow));
+        $availableColumns = $result->columns;
 
         foreach ($data as $index => $trace) {
             $columnNames = Arr::get($trace, 'meta.columnNames');
@@ -101,6 +95,57 @@ class EditChart extends Tool
         return Response::text("Chart designed successfully. {$summary}. Columns matched: ".$columnsUsed->implode(', '));
     }
 
+    private function runFreshGetData(string $type, string $name): GetDataResult
+    {
+        $descriptorSpec = [
+            0 => ['pipe', 'r'],
+            1 => ['pipe', 'w'],
+            2 => ['pipe', 'w'],
+        ];
+
+        $artisan = defined('ARTISAN_BINARY') ? ARTISAN_BINARY : 'artisan';
+        $cmd = sprintf(
+            'php %s chimera:run-artefact-getdata %s %s 2>&1',
+            $artisan,
+            escapeshellarg($type),
+            escapeshellarg($name),
+        );
+
+        $process = proc_open($cmd, $descriptorSpec, $pipes, base_path());
+
+        if (! is_resource($process)) {
+            return new GetDataResult(error: 'Failed to launch subprocess. shell_exec may be disabled.');
+        }
+
+        fclose($pipes[0]);
+        $output = stream_get_contents($pipes[1]);
+        fclose($pipes[1]);
+        $stderr = stream_get_contents($pipes[2]);
+        fclose($pipes[2]);
+        $exitCode = proc_close($process);
+
+        if ($exitCode !== 0 || empty($output)) {
+            return new GetDataResult(error: $stderr ?: 'Subprocess exited with code '.$exitCode);
+        }
+
+        $parsed = json_decode($output);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return new GetDataResult(error: 'Failed to parse subprocess output: '.json_last_error_msg());
+        }
+
+        if (! ($parsed->success ?? false)) {
+            return new GetDataResult(error: $parsed->error ?? 'Unknown error from subprocess');
+        }
+
+        return new GetDataResult(
+            success: true,
+            rowsReturned: $parsed->rows_returned ?? 0,
+            columns: $parsed->columns ?? [],
+            sampleData: $parsed->sample_data ?? null,
+        );
+    }
+
     public function schema(JsonSchema $schema): array
     {
         return [
@@ -108,7 +153,7 @@ class EditChart extends Tool
             'data' => $schema->array()->description(
                 'Array of Plotly trace objects. Each trace requires: '
                 .'"type" (e.g. "bar", "scatter", "pie"), '
-                .'"meta.columnNames" mapping trace properties (x, y, labels, values) to SQL aliases from getData(), '
+                .'"meta.columnNames" mapping trace properties (e.g. x, y, labels, values, text) to SQL aliases from getData(), '
                 .'"name" (display label), '
                 .'and optionally "hovertemplate", "marker", etc. '
                 .'Example: [{"type":"bar","meta":{"columnNames":{"x":"area_name","y":["total"]}},"name":"Total","hovertemplate":"%{y}"}]'
