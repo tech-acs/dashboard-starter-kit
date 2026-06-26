@@ -1,5 +1,5 @@
 <?php
-// Description: Ratio computation with groupBy and lastlyAreaLeftJoinData. Demonstrates map() post-processing for map indicator values.
+// Description: Ratio computation (females / males × 100) with groupBy and lastlyAreaLeftJoinData. Demonstrates map() post-processing, $bins, and SELECTED_COLOR_CHART constant.
 
 namespace App\MapIndicators\Demographics;
 

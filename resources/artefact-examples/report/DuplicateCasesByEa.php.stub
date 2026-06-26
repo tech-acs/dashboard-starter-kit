@@ -1,0 +1,55 @@
+<?php
+
+// Description: Duplicate case detection by enumeration area with HAVING clause and CONCAT/LPAD string manipulation. Demonstrates excludePartials: false and HAVING clause.
+
+namespace App\Reports\Enumeration;
+
+use Illuminate\Support\Collection;
+use Uneca\Chimera\Models\Area;
+use Uneca\Chimera\Report\ReportBaseClass;
+use Uneca\Chimera\Services\BreakoutQueryBuilder;
+
+class DuplicateCasesByEa extends ReportBaseClass
+{
+    public function getData(string $filterPath): Collection
+    {
+        try {
+            $duplicates = (new BreakoutQueryBuilder(
+                $this->report->data_source,
+                $filterPath,
+                excludePartials: false,
+            ))
+                ->select([
+                    "CONCAT(c01, '.', c02, '.', c03, '.', c04) AS path",
+                    'CONCAT(c01, LPAD(c02, 2, "0"), LPAD(c03, 3, "0"), LPAD(c04, 3, "0")) AS ea_code',
+                    'MAX(hint01) AS enumerator',
+                    '`key`',
+                    'COUNT(`key`) AS duplicates',
+                ])
+                ->from(['cenq101'])
+                ->groupBy(['area_code', 'ea_code', 'path', '`key`'])
+                ->having(['duplicates > 1'])
+                ->orderBy(['path'])
+                ->get();
+
+            $duplicatesByPath = $duplicates->keyBy('path');
+
+            $areas = Area::whereIn('path', $duplicates->pluck('path'))
+                ->get(['path', 'code', 'name']);
+
+            return $areas->map(function ($area) use ($duplicatesByPath) {
+                $match = $duplicatesByPath->get($area->path);
+
+                return [
+                    'EA Code' => $match->ea_code ?? '',
+                    'EA Name' => $area->name,
+                    'Enumerator' => $match->enumerator ?? '',
+                    'Key' => $match->key ?? '',
+                    'Duplicates' => (int) ($match->duplicates ?? 0),
+                ];
+            });
+        } catch (\Exception $e) {
+            return collect();
+        }
+    }
+}

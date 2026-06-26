@@ -1,5 +1,5 @@
 <?php
-// Description: Two-aggregate query with safeDivide() for percentage completion. Demonstrates getSingleRow() with map() for gauges.
+// Description: Average interview time against target using two aggregates and safeDivide(). Demonstrates $unit, $outOf, $colorThresholds, and getSingleRow() with map().
 
 namespace App\Livewire\Gauge\Households;
 

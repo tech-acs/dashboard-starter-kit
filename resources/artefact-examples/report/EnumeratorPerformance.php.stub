@@ -1,0 +1,64 @@
+<?php
+
+// Description: Enumerator performance report comparing actual completed households against listing_households targets. Demonstrates partialCaseIdentifyingCondition, reference value join for performance targets, and cross-referencing query results with area metadata.
+
+namespace App\Reports\Enumeration;
+
+use Illuminate\Support\Collection;
+use Illuminate\Support\Number;
+use Uneca\Chimera\Models\Area;
+use Uneca\Chimera\Report\ReportBaseClass;
+use Uneca\Chimera\Services\BreakoutQueryBuilder;
+
+class EnumeratorPerformance extends ReportBaseClass
+{
+    public function getData(string $filterPath): Collection
+    {
+        try {
+            $actuals = (new BreakoutQueryBuilder(
+                $this->report->data_source,
+                $filterPath,
+                partialCaseIdentifyingCondition: 'hint09 = 1',
+            ))
+                ->select([
+                    "CONCAT(c01, '.', c02, '.', c03, '.', c04) AS path",
+                    'COUNT(*) AS total_hh',
+                ])
+                ->from(['cenq101'])
+                ->where(['hr5 = 100'])
+                ->groupBy(['area_code', 'path'])
+                ->get();
+
+            $actualsByPath = $actuals->keyBy('path');
+
+            $maxLevel = Area::max('level');
+            $areas = Area::selectRaw(
+                'areas.path, areas.code, areas.name, rv.value AS target'
+            )
+                ->leftJoin('reference_values AS rv', function ($join) {
+                    $join->on('areas.path', 'rv.path')
+                        ->where('rv.indicator', 'listing_households');
+                })
+                ->where('areas.level', $maxLevel)
+                ->when($filterPath, fn ($q) => $q->whereRaw("areas.path ~ '{$filterPath}.*{1}'"))
+                ->orderBy('areas.path')
+                ->get();
+
+            return $areas->map(function ($area) use ($actualsByPath) {
+                $match = $actualsByPath->get($area->path);
+
+                return [
+                    'EA Code' => $area->code,
+                    'EA Name' => $area->name,
+                    'Target' => (float) ($area->target ?? 0),
+                    'Completed' => (float) ($match->total_hh ?? 0),
+                    'Performance (%)' => Number::format(
+                        safeDivide($match->total_hh ?? 0, $area->target ?? 0) * 100, 1
+                    ),
+                ];
+            });
+        } catch (\Exception $e) {
+            return collect();
+        }
+    }
+}

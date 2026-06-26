@@ -1,5 +1,5 @@
 <?php
-// Description: COUNT(*) with groupBy area_code for choropleth map. Demonstrates required $bins property and SELECTED_COLOR_CHART constant.
+// Description: SUM(total_household_members) with groupBy area_code for choropleth map. Demonstrates required $bins property and SELECTED_COLOR_CHART constant.
 
 namespace App\MapIndicators\Demographics;
 

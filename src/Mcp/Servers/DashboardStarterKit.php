@@ -92,6 +92,7 @@ This server exposes several MCP Resources for reference material:
 - **Do NOT explore consumer app files (`app/`, `vendor/`, `config/`) for code patterns.** Call `get-artefact-examples` instead — it is the ONLY source of code patterns.
 - **Do NOT use `laravel-boost_database-schema`, database queries, or file exploration to discover the data structure.** `read-dictionary` is the ONLY source of record→table and item→column mappings. If it fails, abort (see Failure protocol).
 - Example files show complete `getData()` implementations. Use them as templates and adapt `select`/`from`/`where`/`groupBy` to your specific data.
+- `safeDivide()` and `toDataFrame()` are global helper functions autoloaded via Composer — no import needed. `safeDivide($numerator, $denominator, $integerDivision = false)` safely computes a ratio (returns 0 when denominator is 0 or non-numeric); pass `true` for integer division via `intdiv`. `toDataFrame($collection)` converts a row-oriented Collection into a column-oriented array (`['col' => [values...], ...]`) for Plotly chart consumption.
 
 ## Required Workflow
 

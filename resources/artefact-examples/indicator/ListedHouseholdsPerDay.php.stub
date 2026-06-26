@@ -1,0 +1,51 @@
+<?php
+
+// Description: Time-series daily listing with BETWEEN WHERE clause and Carbon date pre-computation. Demonstrates lastlyAreaLeftJoinData() with referenceValueToInclude argument for target tracking.
+
+namespace App\Livewire\Indicator\Listing;
+
+use Carbon\Carbon;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Number;
+use Uneca\Chimera\Livewire\Chart;
+use Uneca\Chimera\Services\BreakoutQueryBuilder;
+
+class ListedHouseholdsPerDay extends Chart
+{
+    public function getData(string $filterPath): Collection
+    {
+        try {
+            $now = Carbon::now();
+            $startDate = $this->indicator->getDataSource()->start_date->copy()->subDay();
+            $endDate = $this->indicator->getDataSource()->end_date;
+            $totalEnumerationDays = $startDate->diffInDays($endDate);
+            $clampedDays = min($startDate->diffInDays($now), $totalEnumerationDays);
+            $dayCountYesterday = max($clampedDays - 1, 0);
+
+            return (new BreakoutQueryBuilder($this->indicator->data_source, $filterPath))
+                ->select([
+                    "DATE_FORMAT(fnint4b, '%Y-%m-%d') AS enumeration_date",
+                    'COUNT(fn06) AS total',
+                ])
+                ->from(['fn1xx'])
+                ->where([
+                    'fn105 = 100',
+                    "fnint4b BETWEEN '{$this->indicator->getDataSource()->start_date->format('Ymd')}' AND '{$this->indicator->getDataSource()->end_date->format('Ymd')}'",
+                ])
+                ->groupBy(['enumeration_date'])
+                ->orderBy(['enumeration_date'])
+                ->lastlyAreaLeftJoinData(referenceValueToInclude: 'daily_target')
+                ->get()
+                ->map(function ($row) use ($totalEnumerationDays, $clampedDays, $dayCountYesterday) {
+                    $row->percentage_daily_target = Number::format(safeDivide($clampedDays, $totalEnumerationDays) * 100, 1);
+                    $row->percentage_yesterday_target = Number::format(safeDivide($dayCountYesterday, $totalEnumerationDays) * 100, 1);
+                    $row->daily_performance = Number::format(safeDivide($row->total, $row->ref_value) * 100, 1);
+                    $row->daily_target = $row->ref_value;
+
+                    return $row;
+                });
+        } catch (\Exception $e) {
+            return collect();
+        }
+    }
+}

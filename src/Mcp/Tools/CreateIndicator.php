@@ -16,7 +16,7 @@ use Uneca\Chimera\Models\Indicator;
 use Uneca\Chimera\Traits\PlotlyDefaults;
 use Uneca\Chimera\Validation\IndicatorValidationRules;
 
-#[Description('Create a new indicator (Plotly chart) artefact. Generates a Livewire component file from a stub and creates the database record. Prerequisites: call get-data-sources first, parse the dictionary with read-dictionary, read examples via get-artefact-examples. After creation: (1) implement getData() in the generated file using BreakoutQueryBuilder, (2) call guide-breakout-query-builder if you need API reference, (3) call validate-artefact to confirm it works, (4) call edit-chart to configure Plotly traces. If this tool fails, report the error and stop — do not fall back to workarounds.')]
+#[Description('Create a new indicator (Plotly chart) artefact. Generates a Livewire component file from a stub and creates the database record. Prerequisites: call get-data-sources first, parse the dictionary with read-dictionary, read examples via get-artefact-examples. After creation: (1) implement getData() in the generated file using BreakoutQueryBuilder, (2) call guide-breakout-query-builder if you need API reference, (3) call validate-artefact to confirm it works, (4) call edit-chart to configure Plotly traces, (5) call edit-indicator to populate the help field with explanatory text (markdown) documenting which dictionary records/items the indicator queries (from read-dictionary) and what calculations (SQL aggregations, filters, crosstabs) it performs. If this tool fails, report the error and stop — do not fall back to workarounds.')]
 class CreateIndicator extends Tool
 {
     use PlotlyDefaults;

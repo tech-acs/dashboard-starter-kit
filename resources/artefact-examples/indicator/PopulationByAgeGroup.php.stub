@@ -1,5 +1,5 @@
 <?php
-// Description: Multiple CASE WHEN aggregates for age groups. Demonstrates map() percentage computation with safeDivide().
+// Description: Multiple CASE WHEN range conditions (< 15, >= 15 AND < 65, >= 65) for age group breakdown. Demonstrates tap() and safeDivide() for percentage computation.
 
 namespace App\Livewire\Indicator\Demographics;
 
