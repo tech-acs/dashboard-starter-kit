@@ -8,7 +8,7 @@ use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Uri;
 use Laravel\Mcp\Server\Resource;
 
-#[Description('Plotly chart patterns for indicators — trace configurations, meta.columnNames, hovertemplate formatting, and layout adjustments for all supported chart types (bar, scatter, pie, histogram, line, area, box).')]
+#[Description('Plotly chart patterns for indicators — trace configurations, meta.columnNames, hovertemplate formatting, layout adjustments, and worked patterns (stacked bars, reference lines, time series, text labels, aggregate-appended traces) for the supported chart types (bar, scatter, pie, histogram, line, area, box). Not an exhaustive Plotly API reference — consult the official Plotly reference for properties not covered here.')]
 #[Uri('docs://plotly-patterns')]
 class PlotlyPatternsDoc extends Resource
 {
@@ -20,6 +20,11 @@ class PlotlyPatternsDoc extends Resource
     private const CONTENT = <<<'DOC'
 PLOTLY CHART PATTERNS FOR INDICATORS
 =====================================
+
+This doc covers the patterns our indicator examples produce plus base-class
+behaviors you can't infer from Plotly alone. It is NOT an exhaustive API
+reference. For any property/option not covered below, consult the official
+reference: https://plotly.com/javascript/reference/index/
 
 HOW meta.columnNames WORKS
   The edit-chart tool maps SQL column aliases to trace properties via
@@ -35,6 +40,21 @@ HOW meta.columnNames WORKS
   meta.columnNames pointing to a single SQL alias.
 
   For pie charts, use "labels" and "values" instead of "x" and "y".
+
+──────────────────────────────────
+
+PICKING A CHART TYPE BY DATA SHAPE
+  Match the chart type to the shape your getData() returns. Each row cites an
+  example file to study via get-artefact-examples.
+
+  | Data shape                                  | Chart type            | Example to study          |
+  |---------------------------------------------|-----------------------|---------------------------|
+  | single category → value                     | bar or pie            | HouseholdsByWallMaterial  |
+  | area → multiple y-columns                   | stacked/grouped bar   | Refusals, PopulationByAgeGroup |
+  | date → value (time series)                  | line or bar           | HouseholdsByDay           |
+  | date → value + target column                | line + target line    | ListedHouseholdsPerDay    |
+  | area → rate + constant benchmark            | bar + constant ref line | MaternalMortalityRatio  |
+  | continuous variable distribution            | histogram or box      | (none yet)                |
 
 ──────────────────────────────────
 
@@ -65,6 +85,30 @@ CHART TYPES
   With reference line:
     Trace 1: bar with y from data
     Trace 2: scatter/line with y from reference_value column
+
+  Stacked bar (multiple y-columns per area):
+    One trace per column, all sharing the same x alias. Set barmode: "stack".
+    See the Refusals and PopulationByAgeGroup examples.
+
+    [
+      { "type": "bar", "meta": { "columnNames": { "x": ["area_name"], "y": ["children"] } }, "name": "Children" },
+      { "type": "bar", "meta": { "columnNames": { "x": ["area_name"], "y": ["adults"] } }, "name": "Adults" },
+      { "type": "bar", "meta": { "columnNames": { "x": ["area_name"], "y": ["elderly"] } }, "name": "Elderly" }
+    ]
+    Layout: { "barmode": "stack" }
+
+  Bar with column-mapped text labels (value labels on bars):
+    Map a computed column to the trace "text" property via meta.columnNames,
+    then render it with texttemplate. See the PopulationByAgeGroup example
+    (children_pct column).
+
+    {
+      "type": "bar",
+      "meta": { "columnNames": { "x": ["area_name"], "y": ["children"], "text": ["children_pct"] } },
+      "name": "Children",
+      "texttemplate": "%{text}%",
+      "textposition": "outside"
+    }
 
 ──────────────────────────────────
 
@@ -212,6 +256,24 @@ REFERENCE LINE OVERLAY (bar + line)
 
 ──────────────────────────────────
 
+CONSTANT REFERENCE LINE (horizontal benchmark)
+  When getData() produces a column holding the same constant value in every
+  row (e.g. an expected/benchmark figure added in PHP), a scatter line mapped
+  to that column renders as a flat horizontal dashed line. This is distinct
+  from the reference_value overlay above (which varies per area). See the
+  MaternalMortalityRatio example (the `expected` column = 354 for every row).
+
+  Trace 1 (bars — observed values):
+    { "type": "bar", "meta": { "columnNames": { "x": ["area_name"], "y": ["rate"] } }, "name": "Rate" }
+
+  Trace 2 (line — constant benchmark):
+    { "type": "scatter", "mode": "lines",
+      "meta": { "columnNames": { "x": ["area_name"], "y": ["expected"] } },
+      "line": { "color": "#dc2626", "width": 2, "dash": "dash" },
+      "name": "Expected" }
+
+──────────────────────────────────
+
 MULTI-AXIS LAYOUT (two y-axes)
   When one trace should use the right axis:
 
@@ -226,6 +288,21 @@ MULTI-AXIS LAYOUT (two y-axes)
       "yaxis": { "title": { "text": "Left Axis Label" } },
       "yaxis2": { "title": { "text": "Right Axis Label" }, "overlaying": "y", "side": "right" }
     }
+
+──────────────────────────────────
+
+TIME-SERIES X-AXIS
+  When getData() returns one row per date (e.g. daily listing), format the
+  date column as "YYYY-MM-DD" in SQL and order by it so rows arrive in
+  sequence. The default xaxis.type "category" then renders dates in order;
+  pass { "xaxis": { "type": "date" } } only if you need Plotly's date axis
+  features (tick formatting, range slider). See the HouseholdsByDay and
+  ListedHouseholdsPerDay examples.
+
+  Line + target line (observed value vs. a per-row target column):
+    Trace 1: scatter mode "lines+markers", y → observed column (e.g. total)
+    Trace 2: scatter mode "lines", y → target column (e.g. daily_target),
+             dashed line for visual contrast
 
 ──────────────────────────────────
 
@@ -263,6 +340,23 @@ LAYOUT ADJUSTMENTS
     generated indicator file at `app/Livewire/Indicator/...` to add the
     property.
 
+  Aggregate-Appended Traces (PHP property, not a Plotly layout field)
+    Set `public array $aggregateAppendedTraces = ['<trace name>' => 'sum'];`
+    in your indicator class to have the Chart base class auto-append an
+    aggregate row ("All {area level}") to the matching trace at render time.
+    The trace `name` in your edit-chart data MUST exactly match the property
+    key. Supported ops: sum, count, min, max, mode, median, avg.
+
+    Behavior at render (handled by the base class — do NOT configure manually):
+      - sum: appends a SEPARATE trace on the right y-axis (yaxis2) named
+        "<trace name> (across <area level>)" with x = "All <area level>" and
+        y = the summed values. yaxis2 is auto-enabled.
+      - other ops: appends an extra x/y point to the SAME trace.
+
+    See the MaternalMortalityRatio example (aggregateAppendedTraces for the
+    "deaths" trace). Do NOT set this via edit-chart — it is a PHP class
+    property; edit the generated indicator file to add it.
+
 ──────────────────────────────────
 
 HOVERTEMPLATE FORMATTING
@@ -271,10 +365,48 @@ HOVERTEMPLATE FORMATTING
   %{y:,.0f}        thousands separator, no decimals
   %{y:$.2f}        currency format
   %{x}             x value
+  %{text}          value of the column mapped to the trace "text" property
   %{label}         pie label
   %{percent}       pie percentage
   %{fullData.name} trace name (shows in secondary box)
   <extra></extra>  hide secondary grey box
+  <extra>Label</extra> replace the secondary box content with custom text
+
+──────────────────────────────────
+
+WORKED EXAMPLES
+  Each mirrors an enriched example file — fetch the full getData() source via
+  get-artefact-examples to see how the data shape is produced. Only the
+  trace/layout essentials are shown; add marker/hovertemplate styling as
+  needed and consult the Plotly reference for anything beyond these patterns.
+
+  1. Stacked bar with text labels (mirrors PopulationByAgeGroup)
+     {
+       "data": [
+         { "type": "bar", "meta": { "columnNames": { "x": ["area_name"], "y": ["children"], "text": ["children_pct"] } }, "name": "Children", "texttemplate": "%{text}%", "textposition": "outside", "hovertemplate": "%{x}<br>%{y:,.0f} (%{text}%)<extra></extra>" },
+         { "type": "bar", "meta": { "columnNames": { "x": ["area_name"], "y": ["adults"] } }, "name": "Adults", "hovertemplate": "%{x}<br>%{y:,.0f}<extra></extra>" },
+         { "type": "bar", "meta": { "columnNames": { "x": ["area_name"], "y": ["elderly"] } }, "name": "Elderly", "hovertemplate": "%{x}<br>%{y:,.0f}<extra></extra>" }
+       ],
+       "layout": { "barmode": "stack", "yaxis": { "title": { "text": "Population" } } }
+     }
+
+  2. Bar + constant reference line (mirrors MaternalMortalityRatio)
+     {
+       "data": [
+         { "type": "bar", "meta": { "columnNames": { "x": ["area_name"], "y": ["rate"] } }, "name": "MMR", "hovertemplate": "%{x}<br>%{y:,.0f}<extra></extra>" },
+         { "type": "scatter", "mode": "lines", "meta": { "columnNames": { "x": ["area_name"], "y": ["expected"] } }, "name": "Expected", "line": { "color": "#dc2626", "width": 2, "dash": "dash" }, "hovertemplate": "Expected %{y:,.0f}<extra></extra>" }
+       ],
+       "layout": { "yaxis": { "title": { "text": "Deaths per 100k live births" } } }
+     }
+
+  3. Time-series line + target line (mirrors ListedHouseholdsPerDay)
+     {
+       "data": [
+         { "type": "scatter", "mode": "lines+markers", "meta": { "columnNames": { "x": ["enumeration_date"], "y": ["total"] } }, "name": "Listed", "line": { "color": "#2563eb", "width": 2 }, "hovertemplate": "%{x}<br>%{y:,.0f}<extra></extra>" },
+         { "type": "scatter", "mode": "lines", "meta": { "columnNames": { "x": ["enumeration_date"], "y": ["daily_target"] } }, "name": "Target", "line": { "color": "#dc2626", "width": 2, "dash": "dash" }, "hovertemplate": "Target %{y:,.0f}<extra></extra>" }
+       ],
+       "layout": { "xaxis": { "title": { "text": "Date" } }, "yaxis": { "title": { "text": "Households" } } }
+     }
 
 ──────────────────────────────────
 

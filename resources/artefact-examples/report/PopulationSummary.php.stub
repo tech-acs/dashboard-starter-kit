@@ -1,5 +1,5 @@
 <?php
-// Description: Aggregated summary query for report export. Demonstrates GROUP BY with computed columns.
+// Description: CASE WHEN aggregates for male/female demographic breakdown. Demonstrates GROUP BY with computed columns for Excel export.
 
 namespace App\Reports\Demographics;
 

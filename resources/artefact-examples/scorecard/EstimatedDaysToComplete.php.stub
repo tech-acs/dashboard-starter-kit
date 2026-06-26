@@ -1,0 +1,70 @@
+<?php
+
+// Description: Multi-source estimation scorecard using area tree targets and completed case counts. Demonstrates partialCaseIdentifyingCondition override, AreaTree lookup, and synthetic return with PHP-computed value.
+
+namespace App\Livewire\Scorecard\Enumeration;
+
+use Carbon\Carbon;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Number;
+use Uneca\Chimera\Livewire\ScorecardComponent;
+use Uneca\Chimera\Models\DataSource;
+use Uneca\Chimera\Services\AreaTree;
+use Uneca\Chimera\Services\BreakoutQueryBuilder;
+
+class EstimatedDaysToComplete extends ScorecardComponent
+{
+    public string $unit = ' days';
+
+    public function getData(string $filterPath): Collection
+    {
+        try {
+            $now = Carbon::now();
+            $todayFormatted = $now->format('Ymd');
+
+            $areas = (new AreaTree)->areas(
+                $filterPath,
+                referenceValueToInclude: 'listing_population',
+            );
+            $targetHouseholds = $areas->sum('ref_value');
+
+            $completed = (new BreakoutQueryBuilder(
+                $this->scorecard->data_source,
+                $filterPath,
+                partialCaseIdentifyingCondition: 'hint09 = 1',
+            ))
+                ->select(['COUNT(c06) AS value'])
+                ->from(['cenq101'])
+                ->where(["hint05d < {$todayFormatted}"])
+                ->getSingleRow();
+
+            $completedCount = $completed->first()->value ?? 0;
+
+            $dataSource = DataSource::where('name', $this->scorecard->data_source)->first();
+            $startDate = $dataSource->start_date->copy()->subDay();
+            $endDate = $dataSource->end_date;
+            $totalDays = $startDate->diffInDays($endDate);
+            $daysElapsed = $startDate->diffInDays($now);
+            $clampedDays = min(max($daysElapsed, 1), $totalDays + 1);
+
+            $averageDaily = safeDivide($completedCount, $clampedDays);
+
+            $daysLeft = $averageDaily <= 1
+                ? $totalDays
+                : safeDivide($targetHouseholds - $completedCount, $averageDaily, true);
+
+            if ($daysLeft > 0) {
+                $daysLeft += 1;
+            }
+
+            $daysLeft = min(max($daysLeft, 0), 100);
+
+            return collect([(object) [
+                'value' => Number::format($daysLeft),
+                'diff' => null,
+            ]]);
+        } catch (\Exception $e) {
+            return collect();
+        }
+    }
+}

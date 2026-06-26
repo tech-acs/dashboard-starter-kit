@@ -1,5 +1,5 @@
 <?php
-// Description: Date formatting with GROUP BY and ORDER BY. Demonstrates time-series aggregation with get().
+// Description: DATE_FORMAT time-series aggregation with GROUP BY and ORDER BY. Demonstrates date formatting in SQL with get().
 
 namespace App\Livewire\Indicator\Households;
 

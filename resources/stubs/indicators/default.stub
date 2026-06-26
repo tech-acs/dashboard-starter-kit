@@ -9,6 +9,12 @@ use Uneca\Chimera\Services\BreakoutQueryBuilder;
 
 class {{ class }} extends Chart
 {
+    /**
+     * Override-able base class defaults.
+     *
+     * Uncomment any property below and set a different value to override the
+     * base class default.
+     */
     // public bool $useDynamicAreaXAxisTitles = true;
     // public array $aggregateAppendedTraces = []; /* ['trace name' => 'avg'] ... sum, count, min, max, mode, median */
 

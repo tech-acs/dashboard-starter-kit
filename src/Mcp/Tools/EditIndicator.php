@@ -12,7 +12,7 @@ use Uneca\Chimera\Mcp\Tools\Concerns\ForceModelUpdate;
 use Uneca\Chimera\Mcp\Tools\Concerns\RequiresInitializedMcp;
 use Uneca\Chimera\Models\Indicator;
 
-#[Description('Update an indicator\'s metadata after creation. For Plotly traces and layout, use EditChart instead. Finds the indicator by name and updates only the provided fields. If this tool fails, report the error and stop — do not fall back to workarounds.')]
+#[Description('Update an indicator\'s metadata after creation. For Plotly traces and layout, use EditChart instead. Finds the indicator by name and updates only the provided fields. The help field should explain which dictionary records/items the indicator queries and what calculations it performs — populate it automatically after creation using data from read-dictionary. If this tool fails, report the error and stop — do not fall back to workarounds.')]
 class EditIndicator extends Tool
 {
     use ForceModelUpdate;
@@ -80,7 +80,7 @@ class EditIndicator extends Tool
             'name' => $schema->string()->description('Name of the indicator to edit'),
             'title' => $schema->string()->description('New title (optional)')->nullable(),
             'description' => $schema->string()->description('New description (optional)')->nullable(),
-            'help' => $schema->string()->description('New help text (optional)')->nullable(),
+            'help' => $schema->string()->description('Explanatory text (markdown) for dashboard users about how the indicator sources its data — which dictionary records/items are queried (e.g. POP_REC.P11 for sex) and what calculations or aggregations are applied. Optional.')->nullable(),
             'data' => $schema->array()->nullable(),
             'layout' => $schema->object()->nullable(),
             'published' => $schema->boolean()->description('Published status (optional)')->nullable(),

@@ -77,10 +77,10 @@ REFERENCE VALUES (OPTIONAL)
   Pass the indicator name to the lastlyArea*() method:
     ->lastlyAreaLeftJoinData('area_code', 'population')
     ->lastlyAreaRightJoinData('area_code', 'number_of_hh')
-  This adds a reference_value column to every result row.
+  This adds a ref_value column to every result row.
   In getData():
-    Scorecards/Gauges — compute diff = value - reference_value
-    Indicators — add a second Plotly trace using the reference_value column
+    Scorecards/Gauges — compute diff = value - ref_value
+    Indicators — add a second Plotly trace using the ref_value column
   Call get-reference-values to discover available indicator names.
 
 WHERE CLAUSE EXAMPLES
@@ -144,9 +144,9 @@ WITH REFERENCE VALUE
         ->select(['COUNT(*) AS value'])
         ->from(['pop_rec'])
         ->groupBy(['area_code'])
-        ->lastlyAreaLeftJoinData('area_code', 'population')
+        ->lastlyAreaLeftJoinData(referenceValueToInclude: 'population')
         ->get();
-    Result rows include: {area_name, area_code, value, reference_value}
+    Result rows include: {area_name, area_code, value, ref_value}
 
 DEBUG HELPERS
     ->dump()       Var-dumps the assembled SQL string (calls Laravel dump())

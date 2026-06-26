@@ -1,0 +1,36 @@
+<?php
+
+// Description: Multi-category CASE WHEN for enumeration outcomes with NOT IN fallback. Demonstrates useDynamicAreaXAxisTitles and complex categorical breakdowns.
+
+namespace App\Livewire\Indicator\Enumeration;
+
+use Illuminate\Support\Collection;
+use Uneca\Chimera\Livewire\Chart;
+use Uneca\Chimera\Services\BreakoutQueryBuilder;
+
+class Refusals extends Chart
+{
+    public bool $useDynamicAreaXAxisTitles = true;
+
+    public function getData(string $filterPath): Collection
+    {
+        try {
+            return (new BreakoutQueryBuilder($this->indicator->data_source, $filterPath))
+                ->select([
+                    'SUM(CASE WHEN hint09 = 1 THEN 1 ELSE 0 END) AS completed',
+                    'SUM(CASE WHEN hint09 = 2 THEN 1 ELSE 0 END) AS partials',
+                    'SUM(CASE WHEN hint09 = 3 THEN 1 ELSE 0 END) AS refusal',
+                    'SUM(CASE WHEN hint09 = 4 THEN 1 ELSE 0 END) AS absent',
+                    'SUM(CASE WHEN hint09 = 5 THEN 1 ELSE 0 END) AS incapable',
+                    'SUM(CASE WHEN hint09 NOT IN (1, 2, 3, 4, 5) OR hint09 IS NULL THEN 1 ELSE 0 END) AS unknown',
+                    'COUNT(*) AS total',
+                ])
+                ->from(['cenq101'])
+                ->groupBy(['area_code'])
+                ->lastlyAreaLeftJoinData()
+                ->get();
+        } catch (\Exception $e) {
+            return collect();
+        }
+    }
+}

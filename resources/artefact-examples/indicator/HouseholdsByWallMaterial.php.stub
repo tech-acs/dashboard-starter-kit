@@ -1,0 +1,34 @@
+<?php
+
+// Description: Categorical breakdown of households by construction material type. Demonstrates simple groupBy on a survey field without area joins — x-axis is a category, not area or date.
+
+namespace App\Livewire\Indicator\Households;
+
+use Illuminate\Support\Collection;
+use Uneca\Chimera\Livewire\Chart;
+use Uneca\Chimera\Services\BreakoutQueryBuilder;
+
+class HouseholdsByWallMaterial extends Chart
+{
+    public function getData(string $filterPath): Collection
+    {
+        try {
+            return (new BreakoutQueryBuilder($this->indicator->data_source, $filterPath))
+                ->select([
+                    'CASE
+                        WHEN wall_material = 1 THEN "Brick"
+                        WHEN wall_material = 2 THEN "Mud"
+                        WHEN wall_material = 3 THEN "Timber"
+                        WHEN wall_material = 4 THEN "Concrete"
+                        ELSE "Other"
+                    END AS material',
+                    'COUNT(*) AS total',
+                ])
+                ->from(['housing_rec'])
+                ->groupBy(['material'])
+                ->get();
+        } catch (\Exception $e) {
+            return collect();
+        }
+    }
+}

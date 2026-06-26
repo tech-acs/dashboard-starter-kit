@@ -1,0 +1,51 @@
+<?php
+
+// Description: Maternal mortality ratio computed from two separate queries (deaths/births) with aggregateAppendedTraces for national total. Demonstrates multi-query merging, getAreaBasedAxisTitle(), computed rates per 100k, and named constant for benchmarks.
+
+namespace App\Livewire\Indicator\Households;
+
+use Illuminate\Support\Collection;
+use Uneca\Chimera\Livewire\Chart;
+use Uneca\Chimera\Services\BreakoutQueryBuilder;
+
+class MaternalMortalityRatio extends Chart
+{
+    private const WHO_EXPECTED_MMR_2023 = 354;
+
+    public bool $useDynamicAreaXAxisTitles = true;
+
+    public array $aggregateAppendedTraces = ['deaths' => 'sum']; // Keys must match trace names in Plotly data
+
+    public function getData(string $filterPath): Collection
+    {
+        try {
+            $deaths = (new BreakoutQueryBuilder($this->indicator->data_source, $filterPath))
+                ->select(['COUNT(*) AS deaths'])
+                ->from(['secc'])
+                ->where(['c08 = 1 OR c09 = 1 OR c10 = 1'])
+                ->groupBy(['area_code'])
+                ->lastlyAreaLeftJoinData()
+                ->get();
+
+            $births = (new BreakoutQueryBuilder($this->indicator->data_source, $filterPath))
+                ->select(['COUNT(*) AS births'])
+                ->from(['secb'])
+                ->where(['b06b = 0'])
+                ->groupBy(['area_code'])
+                ->lastlyAreaLeftJoinData()
+                ->get();
+
+            $birthsByCode = $births->keyBy('area_code');
+
+            return $deaths->map(function ($row) use ($birthsByCode) {
+                $row->expected = self::WHO_EXPECTED_MMR_2023;
+                $row->births = $birthsByCode->get($row->area_code)->births ?? 0;
+                $row->rate = safeDivide($row->deaths, $row->births) * 100000;
+
+                return $row;
+            });
+        } catch (\Exception $e) {
+            return collect();
+        }
+    }
+}

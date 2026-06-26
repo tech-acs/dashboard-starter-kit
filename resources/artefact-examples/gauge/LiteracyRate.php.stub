@@ -1,5 +1,5 @@
 <?php
-// Description: CASE WHEN aggregates for percentage. Demonstrates conditional counting in SELECT with getSingleRow().
+// Description: CASE WHEN aggregates for literacy percentage. Demonstrates $colorThresholds and getSingleRow() with map().
 
 namespace App\Livewire\Gauge\Education;
 

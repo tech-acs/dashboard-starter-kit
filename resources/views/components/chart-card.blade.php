@@ -46,7 +46,7 @@
                 class="transition duration-1000 ease-in-out absolute inset-0 justify-center items-center opacity-90 bg-white px-4 py-5 sm:px-6"
                 x-cloak
         >
-            {!! $indicator?->help !!}
+            {!! Illuminate\Support\Str::markdown($indicator?->help) !!}
         </div>
     </div>
 </div>
