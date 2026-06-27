@@ -124,7 +124,11 @@ abstract class Chart extends Component
                     $traces[$index]['y'] = $data[$columnNames['y']] ?? null;*/
                     foreach ($columnNames as $key => $columnName) {
                         $columns = is_array($columnName) ? $columnName : [$columnName];
-                        $traces[$index][$key] = $data[$columns[0]] ?? null;
+                        if (count($columns) > 1) {
+                            $traces[$index][$key] = array_map(fn ($col) => $data[$col] ?? [], $columns);
+                        } else {
+                            $traces[$index][$key] = $data[$columns[0]] ?? null;
+                        }
                     }
                 }
                 $traceName = strip_tags($trace['name'] ?? '');

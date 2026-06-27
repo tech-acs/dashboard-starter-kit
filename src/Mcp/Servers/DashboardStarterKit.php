@@ -289,6 +289,11 @@ Plotly trace definitions:
     - **Box** — show spread, quartiles, and outliers
   - `meta.columnNames` — maps trace properties (e.g. `x`, `y`, `labels`, `values`, `text`)
     to the SQL aliases from your `getData()` SELECT. These MUST match exactly.
+    For standard charts, each property maps to a single alias (`"y": ["total"]`).
+    For **multicategory (nested) x-axes**, set `"x"` to an array of two or more
+    aliases (`"x": ["sex", "education_level"]`). This produces an array-of-arrays
+    that Plotly renders as nested tick labels at each x position.
+    See the **Multicategory (Nested) X-Axis** section in `docs://plotly-patterns`.
   - `name` — display label for the legend
   - `hovertemplate`, `marker`, `text` — optional Plotly styling properties
 - **`layout`** (optional): Plotly layout overrides (title, axis titles, margins, etc.)
