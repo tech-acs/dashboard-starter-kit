@@ -39,10 +39,6 @@ class EditScorecard extends Tool
             $update['title'] = $request->get('title');
         }
 
-        if ($request->has('published')) {
-            $update['published'] = $request->boolean('published');
-        }
-
         if ($request->has('scope')) {
             $update['scope'] = $request->get('scope');
         }
@@ -57,7 +53,6 @@ class EditScorecard extends Tool
         return [
             'name' => $schema->string()->description('Name of the scorecard to edit'),
             'title' => $schema->string()->description('New title (optional)')->nullable(),
-            'published' => $schema->boolean()->description('Published status (optional)')->nullable(),
             'scope' => $schema->string()->description('Scope (optional)')->nullable(),
         ];
     }

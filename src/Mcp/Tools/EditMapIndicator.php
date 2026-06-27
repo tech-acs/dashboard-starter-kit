@@ -43,10 +43,6 @@ class EditMapIndicator extends Tool
             $update['description'] = $request->get('description');
         }
 
-        if ($request->has('published')) {
-            $update['published'] = $request->boolean('published');
-        }
-
         $this->forceUpdate($mapIndicator, $update);
 
         return Response::text('Map indicator updated successfully');
@@ -58,7 +54,6 @@ class EditMapIndicator extends Tool
             'name' => $schema->string()->description('Name of the map indicator to edit'),
             'title' => $schema->string()->description('New title (optional)')->nullable(),
             'description' => $schema->string()->description('New description (optional)')->nullable(),
-            'published' => $schema->boolean()->description('Published status (optional)')->nullable(),
         ];
     }
 }

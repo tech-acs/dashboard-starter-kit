@@ -34,7 +34,6 @@ describe('EditScorecard MCP tool', function () {
             ->tool(EditScorecard::class, [
                 'name' => 'TestScorecard',
                 'title' => 'Updated Title',
-                'published' => true,
                 'scope' => 'Dashboard only',
             ]);
 
@@ -43,7 +42,6 @@ describe('EditScorecard MCP tool', function () {
 
         $scorecard = DB::table('scorecards')->where('name', 'TestScorecard')->first();
         expect(json_decode($scorecard->title)->en)->toBe('Updated Title');
-        expect($scorecard->published)->toBe(1);
         expect($scorecard->scope)->toBe('Dashboard only');
     });
 

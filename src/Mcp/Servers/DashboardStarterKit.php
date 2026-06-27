@@ -323,11 +323,11 @@ If validation fails, fix the error (column name mismatch, missing import, etc.) 
 
 ## Editing Artefacts
 Use these tools after creation, only if the user requests changes to artefacts:
-- `edit-indicator` — title, description, help, published, scope (use `edit-chart` for traces and layout)
-- `edit-scorecard` — title, published, scope
-- `edit-gauge` — title, subtitle, published
-- `edit-map-indicator` — title, description, published
-- `edit-report` — title, description, published, enabled
+- `edit-indicator` — title, description, help, scope (use `edit-chart` for traces and layout)
+- `edit-scorecard` — title, scope
+- `edit-gauge` — title, subtitle
+- `edit-map-indicator` — title, description
+- `edit-report` — title, description
 - `manage-page-assignment` — attach/detach artefacts to/from pages
 
 ## Breakout Database
