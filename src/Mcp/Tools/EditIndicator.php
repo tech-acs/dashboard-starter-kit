@@ -56,10 +56,6 @@ class EditIndicator extends Tool
             $update['layout'] = $request->get('layout');
         }
 
-        if ($request->has('published')) {
-            $update['published'] = $request->boolean('published');
-        }
-
         if ($request->has('scope')) {
             $scope = $request->get('scope');
             $validScopes = array_column(IndicatorScope::cases(), 'value');
@@ -83,7 +79,6 @@ class EditIndicator extends Tool
             'help' => $schema->string()->description('Explanatory text (markdown) for dashboard users about how the indicator sources its data — which dictionary records/items are queried (e.g. POP_REC.P11 for sex) and what calculations or aggregations are applied. Optional.')->nullable(),
             'data' => $schema->array()->nullable(),
             'layout' => $schema->object()->nullable(),
-            'published' => $schema->boolean()->description('Published status (optional)')->nullable(),
             'scope' => $schema->string()->description("Scope: 'Pages only', 'Area insights only', or 'Everywhere' (optional)")->nullable(),
         ];
     }

@@ -289,6 +289,11 @@ Plotly trace definitions:
     - **Box** — show spread, quartiles, and outliers
   - `meta.columnNames` — maps trace properties (e.g. `x`, `y`, `labels`, `values`, `text`)
     to the SQL aliases from your `getData()` SELECT. These MUST match exactly.
+    For standard charts, each property maps to a single alias (`"y": ["total"]`).
+    For **multicategory (nested) x-axes**, set `"x"` to an array of two or more
+    aliases (`"x": ["sex", "education_level"]`). This produces an array-of-arrays
+    that Plotly renders as nested tick labels at each x position.
+    See the **Multicategory (Nested) X-Axis** section in `docs://plotly-patterns`.
   - `name` — display label for the legend
   - `hovertemplate`, `marker`, `text` — optional Plotly styling properties
 - **`layout`** (optional): Plotly layout overrides (title, axis titles, margins, etc.)
@@ -323,11 +328,11 @@ If validation fails, fix the error (column name mismatch, missing import, etc.) 
 
 ## Editing Artefacts
 Use these tools after creation, only if the user requests changes to artefacts:
-- `edit-indicator` — title, description, help, published, scope (use `edit-chart` for traces and layout)
-- `edit-scorecard` — title, published, scope
-- `edit-gauge` — title, subtitle, published
-- `edit-map-indicator` — title, description, published
-- `edit-report` — title, description, published, enabled
+- `edit-indicator` — title, description, help, scope (use `edit-chart` for traces and layout)
+- `edit-scorecard` — title, scope
+- `edit-gauge` — title, subtitle
+- `edit-map-indicator` — title, description
+- `edit-report` — title, description
 - `manage-page-assignment` — attach/detach artefacts to/from pages
 
 ## Breakout Database

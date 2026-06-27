@@ -42,7 +42,6 @@ describe('EditIndicator MCP tool', function () {
                 'title' => 'Updated Title',
                 'description' => 'Updated description',
                 'help' => 'Updated help',
-                'published' => true,
                 'scope' => 'Pages only',
             ]);
 
@@ -53,7 +52,6 @@ describe('EditIndicator MCP tool', function () {
         expect(json_decode($indicator->title)->en)->toBe('Updated Title');
         expect(json_decode($indicator->description)->en)->toBe('Updated description');
         expect(json_decode($indicator->help)->en)->toBe('Updated help');
-        expect($indicator->published)->toBe(1);
         expect($indicator->scope)->toBe('Pages only');
     });
 
@@ -69,7 +67,6 @@ describe('EditIndicator MCP tool', function () {
         $indicator = DB::table('indicators')->where('name', 'TestIndicator')->first();
         expect(json_decode($indicator->title)->en)->toBe('Only Title Changed');
         expect($indicator->description)->toBe('Original description');
-        expect($indicator->published)->toBe(0);
     });
 
     it('returns error when indicator not found', function () {

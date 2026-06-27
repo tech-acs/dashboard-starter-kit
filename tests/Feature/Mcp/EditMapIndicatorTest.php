@@ -34,7 +34,6 @@ describe('EditMapIndicator MCP tool', function () {
                 'name' => 'TestMapIndicator',
                 'title' => 'Updated Title',
                 'description' => 'Updated description',
-                'published' => true,
             ]);
 
         $response->assertOk();
@@ -43,7 +42,6 @@ describe('EditMapIndicator MCP tool', function () {
         $mi = DB::table('map_indicators')->where('name', 'TestMapIndicator')->first();
         expect(json_decode($mi->title)->en)->toBe('Updated Title');
         expect(json_decode($mi->description)->en)->toBe('Updated description');
-        expect($mi->published)->toBe(1);
     });
 
     it('returns error when map indicator not found', function () {

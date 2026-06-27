@@ -31,9 +31,17 @@ HOW meta.columnNames WORKS
   meta.columnNames. The keys are trace property paths, the values are SQL aliases
   from your getData() SELECT.
 
-  Values can be a string ("x": "area_name") or a single-element array
-  ("y": ["total"]). The edit-chart tool validates all array elements against
-  your SQL aliases, then the trace reads the first element.
+  Values can be:
+    - A single string:        "x": "area_name"
+    - A single-element array: "y": ["total"]
+    - A multi-element array (multicategory x):  "x": ["sex", "education_level"]
+
+  The edit-chart tool validates all elements against your getData() SQL aliases.
+  At render time:
+    - Single-value properties → resolved as a flat Plotly data array
+    - Multi-value properties (2+ columns) → resolved as an ARRAY OF ARRAYS
+      (one inner array per column), which Plotly renders as a nested
+      multicategory axis. See the MULTICATEGORY (NESTED) X-AXIS section below.
 
   For multi-trace charts (e.g. grouped bars for males and females), create
   **separate trace objects** in the data array, each with its own
@@ -109,6 +117,59 @@ CHART TYPES
       "texttemplate": "%{text}%",
       "textposition": "outside"
     }
+
+MULTICATEGORY (NESTED) X-AXIS
+
+  When each data point belongs to two or more category levels (e.g. Sex +
+  Education Level, or County + Year), set meta.columnNames.x to an array
+  of two or more column aliases:
+
+  Trace configuration:
+    {
+      "type": "bar",
+      "meta": {
+        "columnNames": {
+          "x": ["sex", "education_level"],
+          "y": ["percentage"]
+        }
+      },
+      "name": "% of Population",
+      "hovertemplate": "%{x}<br>%{y:.1f}%<extra></extra>"
+    }
+
+  This produces a Plotly x value as an ARRAY OF ARRAYS — one inner array
+  per category level:
+
+    x: [['Male', 'Male', 'Male', 'Female', 'Female', 'Female'],
+        ['None', 'Primary', 'Secondary', 'None', 'Primary', 'Secondary']]
+    y: [21.3, 37.6, 19.2, 23.3, 37.7, 18.7]
+
+  The chart renders nested tick labels:
+
+         ┌─────────────────────┬─────────────────────┐
+         │        Male         │       Female        │
+         │ None  Pri  Sec  Trt │ None  Pri  Sec  Trt │
+         └─────────────────────┴─────────────────────┘
+
+  Requirements:
+    - getData() must return separate columns for each category level
+      (e.g. both "sex" and "education_level" are in the SELECT)
+    - Every alias in the meta.columnNames.x array must match a SQL alias
+      in getData() — edit-chart validates all of them
+    - Data rows must be ordered so that the inner category cycles within
+      the outer category (e.g. all of Male's rows, then all of Female's
+      rows) to produce correct pairwise pairing
+
+  Data ordering tip:
+    Use ORDER BY on both columns:
+    ->orderBy(['P11 ASC', 'P47_COMP ASC'])
+    This groups all rows for the outer category together while keeping
+    the inner category in a consistent sequence.
+
+  Limitations:
+    - Multi-column "x" works with bar, scatter, and line charts
+    - Pie charts cannot use multicategory (they use labels/values)
+    - Do NOT combine multicategory x with aggregateAppendedTraces
 
 ──────────────────────────────────
 

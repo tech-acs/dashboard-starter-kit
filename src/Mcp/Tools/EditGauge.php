@@ -43,10 +43,6 @@ class EditGauge extends Tool
             $update['subtitle'] = $request->get('subtitle');
         }
 
-        if ($request->has('published')) {
-            $update['published'] = $request->boolean('published');
-        }
-
         $this->forceUpdate($gauge, $update);
 
         return Response::text('Gauge updated successfully');
@@ -58,7 +54,6 @@ class EditGauge extends Tool
             'name' => $schema->string()->description('Name of the gauge to edit'),
             'title' => $schema->string()->description('New title (optional)')->nullable(),
             'subtitle' => $schema->string()->description('New subtitle (optional)')->nullable(),
-            'published' => $schema->boolean()->description('Published status (optional)')->nullable(),
         ];
     }
 }

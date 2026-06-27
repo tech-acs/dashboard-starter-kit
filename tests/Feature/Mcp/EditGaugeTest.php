@@ -35,7 +35,6 @@ describe('EditGauge MCP tool', function () {
                 'name' => 'TestGauge',
                 'title' => 'Updated Title',
                 'subtitle' => 'Updated subtitle',
-                'published' => true,
             ]);
 
         $response->assertOk();
@@ -44,7 +43,6 @@ describe('EditGauge MCP tool', function () {
         $gauge = DB::table('gauges')->where('name', 'TestGauge')->first();
         expect(json_decode($gauge->title)->en)->toBe('Updated Title');
         expect(json_decode($gauge->subtitle)->en)->toBe('Updated subtitle');
-        expect($gauge->published)->toBe(1);
     });
 
     it('returns error when gauge not found', function () {

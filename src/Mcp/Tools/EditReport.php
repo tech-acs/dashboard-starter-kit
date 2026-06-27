@@ -43,14 +43,6 @@ class EditReport extends Tool
             $update['description'] = $request->get('description');
         }
 
-        if ($request->has('published')) {
-            $update['published'] = $request->boolean('published');
-        }
-
-        if ($request->has('enabled')) {
-            $update['enabled'] = $request->boolean('enabled');
-        }
-
         $this->forceUpdate($report, $update);
 
         return Response::text('Report updated successfully');
@@ -62,8 +54,6 @@ class EditReport extends Tool
             'name' => $schema->string()->description('Name of the report to edit'),
             'title' => $schema->string()->description('New title (optional)')->nullable(),
             'description' => $schema->string()->description('New description (optional)')->nullable(),
-            'published' => $schema->boolean()->description('Published status (optional)')->nullable(),
-            'enabled' => $schema->boolean()->description('Enabled status (optional)')->nullable(),
         ];
     }
 }

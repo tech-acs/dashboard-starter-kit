@@ -36,8 +36,6 @@ describe('EditReport MCP tool', function () {
                 'name' => 'TestReport',
                 'title' => 'Updated Title',
                 'description' => 'Updated description',
-                'published' => true,
-                'enabled' => true,
             ]);
 
         $response->assertOk();
@@ -46,8 +44,6 @@ describe('EditReport MCP tool', function () {
         $report = DB::table('reports')->where('name', 'TestReport')->first();
         expect(json_decode($report->title)->en)->toBe('Updated Title');
         expect(json_decode($report->description)->en)->toBe('Updated description');
-        expect($report->published)->toBe(1);
-        expect($report->enabled)->toBe(1);
     });
 
     it('returns error when report not found', function () {
