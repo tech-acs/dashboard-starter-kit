@@ -3,6 +3,49 @@
 
 # Core concepts
 
+This page introduces the key architectural concepts that make up the Dashboard Starter Kit. Understanding these will help you navigate the rest of the documentation.
+
+## Dual-Database Architecture
+
+The kit operates with two database tiers:
+
+- **PostgreSQL (Main App)** — Stores users, roles, permissions, settings, area hierarchies, artefact metadata, and cached data. Uses PostGIS for spatial queries and the `ltree` extension for hierarchical area lookups.
+- **MySQL / MariaDB (Breakout DB / Data Sources)** — Stores the actual survey or census data, "broken out" from CSPro into relational tables. Multiple data sources can be connected simultaneously.
+
+## The BreakoutQueryBuilder
+
+The [BreakoutQueryBuilder](/developer/foundation/breakout-query-builder) is the data access layer that bridges these two worlds. It automates CSPro table joins, handles soft-delete and partial-save filtering, and enriches query results with geographic area metadata — ensuring areas with zero data still appear in reports.
+
+## Query Fragments
+
+[Query Fragments](/developer/foundation/query-fragments) serve as the geographic routing engine. They translate the user's currently selected area filter into the correct SQL `SELECT` and `WHERE` clauses, enabling automatic drill-down through the hierarchy levels.
+
+## Artefact Types
+
+The kit provides six artefact types for building dashboards:
+
+| Type | Description |
+|---|---|
+| **Summary Cards** | High-level status on the home page (case counts, dates) |
+| **Indicators** | Plotly.js charts with metadata, scoped to pages or area insights |
+| **Map Indicators** | Choropleth maps with color-coded bins and tooltips |
+| **Gauges** | Single-value progress indicators with color thresholds |
+| **Reports** | Tabular CSV/Excel exports with scheduling and email delivery |
+| **Area Insights** | Dynamic drill-down page combining gauges, scorecards, and charts |
+
+## MCP Server
+
+The kit includes a [Model Context Protocol (MCP) server](/developer/building-your-dashboard/mcp-server) that enables AI assistants to create and manage artefacts programmatically. It exposes 15 tools (create, read, edit, validate) and 4 documentation resources.
+
+## Three-Path Artefact Creation
+
+Every artefact type supports three creation paths sharing the same validation and Action logic:
+
+| Path | Entry Point |
+|---|---|
+| **CLI** | `php artisan chimera:make-{type}` (interactive prompts) |
+| **Web** | Management UI form with templates and sample code |
+| **MCP** | AI-driven tool calls via the MCP server |
 
 ## Data sources
 What we usually refer to as a data source in the context of this app is the database, which usually originates from a census or survey questionnaire. In case of CSPro, each CAPI app or questionnaire will have its own database where the interviews (cases) received from the field are stored. 

@@ -5,12 +5,25 @@
 
 ## Changing the logo
 
-There are two different resources that control the logo graphics used in the dashboard.
+Two different template files control the logo graphics used in the dashboard:
 
-One for the login page (`resources/views/vendor/jetstream/components/authentication-card-logo.blade.php`) and another for everywhere else (`resources/views/vendor/jetstream/components/application-mark.blade.php`)
+- **Login page:** `resources/views/components/authentication-card-logo.blade.php`
+- **Everywhere else:** `resources/views/components/application-mark.blade.php`
 
-By changing the contents of these two files, you can change the logo graphics. Both these resources are of SVG code and we advice that you replace them with either the SVG code of your logo or an SVG file format of your logo.
+By modifying these files, you can replace the default logo with your organization's branding. We recommend using SVG code or an SVG file format for your logo for the best quality and scalability.
 
-To change the hero image on the landing page (welcome page), just replace it (`public/images/hero.jpg`) with a file of the same name.
+To change the hero image on the landing (welcome) page, replace the file at `public/images/hero.jpg` with your own image, using the same filename.
 
-You are also able to control the color of charts, scorecards and other graphics in the dashboard by creating your own theme. Themes are detailed under the **Advanced topics** section.
+## Color Palettes
+
+You can apply one of the available color palettes included with the dashboard. The colors in the selected palette apply to elements such as charts, scorecards, and data cards. The appropriate text color is automatically chosen according to the Web Content Accessibility Guidelines (WCAG 3 / APCA), ensuring correct contrast for readability.
+
+### Color Categories
+
+Colors used for data visualization generally fall into three categories:
+
+- **Categorical:** Distinct colors for different categories with no inherent order (e.g., regions, product types).
+- **Sequential:** A gradient from light to dark representing low to high values (e.g., population density).
+- **Diverging:** Two contrasting colors meeting at a neutral midpoint, useful for showing deviation from a center value (e.g., temperature anomalies).
+
+See [Color Palettes](/developer/advanced-topics/color-palettes) in the Advanced Topics section for the complete list of available palettes and how to apply them.
