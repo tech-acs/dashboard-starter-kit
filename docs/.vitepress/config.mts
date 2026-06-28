@@ -75,7 +75,7 @@ export default defineConfig({
           ]
         },
         {
-          text: 'Dashboard Arefacts',
+          text: 'Dashboard Artefacts',
           collapsed: true,
           items: [
             { text: 'Pages', link: '/manager/dashboard-arefacts/pages' },
@@ -106,23 +106,35 @@ export default defineConfig({
             { text: 'Next steps', link: '/developer/getting-started/next-steps' },
           ]
         },
-        { text: 'Core concepts', link: '/developer/core-concepts' },
+        {
+          text: 'Foundation',
+          collapsed: true,
+          items: [
+            { text: 'Core concepts', link: '/developer/foundation/core-concepts' },
+            { text: 'Folder structure', link: '/developer/foundation/folder-structure' },
+            { text: 'Core configuration', link: '/developer/foundation/core-configuration' },
+            { text: 'Understanding CSPro data', link: '/developer/foundation/understanding-cspro-data' },
+            { text: 'Breakout query builder', link: '/developer/foundation/breakout-query-builder' },
+            { text: 'Query fragments', link: '/developer/foundation/query-fragments' },
+          ]
+        },
         {
           text: 'Building your dashboard',
           collapsed: true,
           items: [
-            { text: 'Folder structure', link: '/developer/building-your-dashboard/folder-structure' },
-            { text: 'Core configuration', link: '/developer/building-your-dashboard/core-configuration' },
             { text: 'Creating scorecards', link: '/developer/building-your-dashboard/creating-scorecards' },
             { text: 'Creating gauges', link: '/developer/building-your-dashboard/creating-gauges' },
             { text: 'Overriding case stats', link: '/developer/building-your-dashboard/overriding-case-stats' },
             { text: 'Creating indicators', link: '/developer/building-your-dashboard/creating-indicators' },
-            { text: 'Hierarchial compatibility', link: '/developer/building-your-dashboard/hierarchial-compatibility' },
+            { text: 'Hierarchical compatibility', link: '/developer/building-your-dashboard/hierarchial-compatibility' },
             { text: 'Creating reports', link: '/developer/building-your-dashboard/creating-reports' },
             { text: 'Creating map based indicators', link: '/developer/building-your-dashboard/creating-map-based-indicators' },
             { text: 'Creating reference value synthesizers', link: '/developer/building-your-dashboard/creating-reference-value-synthesizers' },
             { text: 'Artefact organization', link: '/developer/building-your-dashboard/artefact-organization' },
+            { text: 'Area filter', link: '/developer/building-your-dashboard/area-filter' },
+            { text: 'Area insights', link: '/developer/building-your-dashboard/area-insights' },
             { text: 'Customizing the look and feel', link: '/developer/building-your-dashboard/customizing-the-look-and-feel' },
+            { text: 'MCP server', link: '/developer/building-your-dashboard/mcp-server' },
           ]
         },
         {
@@ -150,11 +162,13 @@ export default defineConfig({
           collapsed: true,
           items: [
             { text: 'Under the hood', link: '/developer/advanced-topics/under-the-hood' },
+            { text: 'Developer mode', link: '/developer/advanced-topics/developer-mode' },
             { text: 'Caching', link: '/developer/advanced-topics/caching' },
             { text: 'Localization', link: '/developer/advanced-topics/localization' },
             { text: 'Color palettes', link: '/developer/advanced-topics/color-palettes' },
             { text: 'Security', link: '/developer/advanced-topics/security' },
             { text: 'Performance tuning', link: '/developer/advanced-topics/performance-tuning' },
+            { text: 'Area restrictions', link: '/developer/advanced-topics/area-restrictions' },
           ]
         },
         { text: 'Contributing', link: '/developer/contributing' },

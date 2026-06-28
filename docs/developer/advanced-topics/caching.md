@@ -9,13 +9,20 @@ Caching of results is always happening behind the scenes. Every published indica
 
 You will most likely want to use your own caching strategy that is appropriate to your data size and other needs. You will therefore need to schedule tasks to update these caches regularly. This is achieved by using the ```chimera:cache``` group of commands. You can run them manually as such but you should schedule them using Laravel's scheduled tasks. Data cached using any of the cache commands does not expire. It is cached *"forever"* as cache replacement strategy is relinquished to the developer and should be achieved through a well thought out scheduling of the cache commands.
 
-For details, please refer to the [Task Scheduling](https://laravel.com/docs/9.x/scheduling#scheduling-artisan-commands) section of the Laravel documentation.
+For details, please refer to the [Task Scheduling](https://laravel.com/docs/scheduling) section of the Laravel documentation.
+
+The scheduled tasks should be defined in your `bootstrap/app.php` file using the `->withSchedule()` method:
 
 ```php
-$schedule->command('chimera:cache --data-source=enumeration')->everySixHours();
+use Illuminate\Console\Scheduling\Schedule;
+
+->withSchedule(function (Schedule $schedule) {
+    $schedule->command('chimera:cache-indicators --data-source=households')
+        ->everySixHours();
+})
 ```
 
-Basically, you add the above type of code to the schedule() method of your ```App\Console\Kernel``` class file for each of your cache commands.
+Basically, you add the above type of code to the `withSchedule` callback for each of your cache commands.
 
 
 ```

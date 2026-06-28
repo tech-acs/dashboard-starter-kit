@@ -35,7 +35,58 @@ We will likely include 'out-of-the-box' indicator templates with every installat
 
 What indicator templates give you is the chart design. You still have to implement the getData() method, which is what fetches and returns the data from the database.
 
+## Designing the Chart
+
+The **Design** button opens the chart editor, a visual workspace for configuring the indicator's Plotly traces and layout. The editor presents a split-pane interface: a schema-driven sidebar on the left and the Plotly canvas on the right.
+
+The Design button is only visible when [Developer Mode](/developer/advanced-topics/developer-mode) is enabled.
+
+### Visual Composition
+
+The left-hand sidebar provides controls for managing the **Traces** (data series) within a chart:
+
+- **Trace Management:** Add multiple traces to a single chart (e.g., separate traces for Males and Females).
+- **Trace Properties:** For each trace, you can define:
+  - **Type** — Select the chart format (e.g., Bar, Scatter, Pie).
+  - **Data Mapping** — Assign specific data columns to the X and Y axes.
+  - **Orientation** — Toggle between Vertical and Horizontal layouts.
+  - **Axes Assignment** — Each trace can be mapped to specific X and Y axes, allowing for dual-axis charts or subplots.
+
+### Advanced Styling
+
+Beyond basic data mapping, the interface offers:
+
+- **Structure & Subplots** — Manage grid layout, margins, and spacing.
+- **Transforms** — Apply real-time data transformations (e.g., filtering or sorting).
+- **Style** — Customize color palettes, fonts, and marker shapes.
+- **Annotate** — Add custom text, labels, or titles directly onto the plot area.
+
+### Workspace Controls
+
+- **Live Preview** — The central canvas renders the chart in real-time as settings are adjusted.
+- **Data View** — Toggle to the Data tab to inspect the raw numbers driving the visualization.
+- **Save as Template** — Save the current configuration as a reusable template for creating related indicators.
+- **Save & Reset** — Commit changes or revert to the previous state.
+
+### Indicator Templates
+
+Indicator templates are partial implementations of common indicators such as population pyramid, household size, sex ratio, etc. You can save any indicator you design as a template via the chart editor. Templates are available when using the `chimera:make-indicator` command or the web form.
+
+What indicator templates give you is the chart design. You still have to implement the `getData()` method yourself.
+
+### Example: Configuring a Stacked Bar Chart
+
+After implementing `getData()` to return your query results, use the chart editor to:
+
+1. Add one trace per data series (e.g., three traces for age groups `< 15`, `15-64`, `65+`).
+2. Set each trace **Type** to `bar`.
+3. Map the **X** column to `area_name` and the **Y** column to the respective percentage column.
+4. Rename each trace to its readable label using the **Name** field.
+5. In the **Bar Layout** section, set **Mode** (`barmode`) to `stack` and **Normalization** (`barnorm`) to `percent`.
+6. Click **Save**.
+
 ## Deleting indicators
+
 Deleting indicators (including permissions and database entry) can be accomplished by using the generic chimera:delete command
 
 ```
@@ -63,9 +114,10 @@ If you choose opt out of the inclusion of working sample code during the generat
 ```php
 <?php
 
-namespace App\Http\Livewire\Households;
+namespace App\Livewire\Households;
 
-use App\Http\Livewire\Chart;
+use Uneca\Chimera\Livewire\Chart;
+use Illuminate\Support\Collection;
 
 class BirthRate extends Chart
 {
